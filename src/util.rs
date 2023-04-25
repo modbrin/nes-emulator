@@ -1,3 +1,5 @@
+//! This module contains supplementary utilites used by main logic
+
 pub enum NesError {
     /// Attempt to access memory out of bounds
     RamOutOfBounds,
@@ -9,6 +11,10 @@ pub enum NesError {
     PcOverflow,
     /// Program counter underflow
     PcUnderflow,
+    /// ROM is larger than designated region in memory
+    OversizedRom,
+    /// Addressing Mode is not supported currently
+    UnsupportedAddressingMode,
 }
 
 pub struct InstructionMetadata {
@@ -51,5 +57,19 @@ pub type InstResult = Result<InstructionMetadata, NesError>;
 impl From<InstructionMetadata> for InstResult {
     fn from(meta: InstructionMetadata) -> Self {
         InstResult::Ok(meta)
+    }
+}
+
+pub trait ByteExt {
+    fn set_by_mask(&mut self, mask: u8);
+    fn unset_by_mask(&mut self, mask: u8);
+}
+
+impl ByteExt for u8 {
+    fn set_by_mask(&mut self, mask: u8) {
+        *self |= mask;
+    }
+    fn unset_by_mask(&mut self, mask: u8) {
+        *self &= !mask;
     }
 }
