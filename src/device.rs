@@ -106,7 +106,7 @@ impl Device {
         self.cpu.reg_y = 0;
         self.cpu.reg_p = Flag::B2 as u8;
         self.cpu.pc = self.ram_read_le_u16(PC_RESET_ADDR)?;
-        self.cpu.sp = 0; // FIXME
+        self.cpu.sp = -1;
         Ok(())
     }
 }

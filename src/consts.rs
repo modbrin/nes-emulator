@@ -12,6 +12,8 @@ pub const CPU_FREQ: usize = 1_790_000;
 pub const PPU_FREQ: usize = 5_370_000;
 /// size of zeropage region in memory
 pub const ZEROPAGE_SIZE: usize = 0x100;
+/// memory indices marking start and end of stack section in memory
+pub const STACK_SECTION: Range<u16> = 0x0100..0x01FF;
 /// memory indices marking start and end of rom section in memory
 pub const ROM_SECTION: Range<usize> = 0x8000..0xFFFF;
 /// memory location where startup value for program counter is stored
@@ -25,6 +27,8 @@ pub const BIT4: u8 = 1 << 4;
 pub const BIT5: u8 = 1 << 5;
 pub const BIT6: u8 = 1 << 6;
 pub const BIT7: u8 = 1 << 7;
+
+pub const BITS45: u8 = BIT4 | BIT5;
 
 #[rustfmt::skip]
 #[derive(Clone, Copy)]

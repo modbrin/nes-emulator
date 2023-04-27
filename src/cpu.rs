@@ -13,7 +13,7 @@ static INST_TABLE: &[(u8, Opcode, InstPtr, AddressingMode, u8)] = {
          /*0x00*/                                       /*0x01*/                                       /*0x02*/                                       /*0x03*/
 /*0x00*/ (0x00, BRK, D::inst_brk, Implied,         7),  (0x01, LDA, D::inst_non, IndexedIndirect, 1),  (0x02, LDA, D::inst_non, IndexedIndirect, 1),  (0x03, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x04*/ (0x04, LDA, D::inst_non, IndexedIndirect, 1),  (0x05, LDA, D::inst_non, IndexedIndirect, 1),  (0x06, LDA, D::inst_non, IndexedIndirect, 1),  (0x07, LDA, D::inst_non, IndexedIndirect, 1),
-/*0x08*/ (0x08, LDA, D::inst_non, IndexedIndirect, 1),  (0x09, LDA, D::inst_non, IndexedIndirect, 1),  (0x0A, LDA, D::inst_non, IndexedIndirect, 1),  (0x0B, LDA, D::inst_non, IndexedIndirect, 1),
+/*0x08*/ (0x08, PHP, D::inst_php, Implied,         3),  (0x09, LDA, D::inst_non, IndexedIndirect, 1),  (0x0A, LDA, D::inst_non, IndexedIndirect, 1),  (0x0B, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x0C*/ (0x0C, LDA, D::inst_non, IndexedIndirect, 1),  (0x0D, LDA, D::inst_non, IndexedIndirect, 1),  (0x0E, LDA, D::inst_non, IndexedIndirect, 1),  (0x0F, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x10*/ (0x10, LDA, D::inst_non, IndexedIndirect, 1),  (0x11, LDA, D::inst_non, IndexedIndirect, 1),  (0x12, LDA, D::inst_non, IndexedIndirect, 1),  (0x13, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x14*/ (0x14, LDA, D::inst_non, IndexedIndirect, 1),  (0x15, LDA, D::inst_non, IndexedIndirect, 1),  (0x16, LDA, D::inst_non, IndexedIndirect, 1),  (0x17, LDA, D::inst_non, IndexedIndirect, 1),
@@ -21,7 +21,7 @@ static INST_TABLE: &[(u8, Opcode, InstPtr, AddressingMode, u8)] = {
 /*0x1C*/ (0x1C, LDA, D::inst_non, IndexedIndirect, 1),  (0x1D, LDA, D::inst_non, IndexedIndirect, 1),  (0x1E, LDA, D::inst_non, IndexedIndirect, 1),  (0x1F, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x20*/ (0x20, LDA, D::inst_non, IndexedIndirect, 1),  (0x21, LDA, D::inst_non, IndexedIndirect, 1),  (0x22, LDA, D::inst_non, IndexedIndirect, 1),  (0x23, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x24*/ (0x24, LDA, D::inst_non, IndexedIndirect, 1),  (0x25, LDA, D::inst_non, IndexedIndirect, 1),  (0x26, LDA, D::inst_non, IndexedIndirect, 1),  (0x27, LDA, D::inst_non, IndexedIndirect, 1),
-/*0x28*/ (0x28, LDA, D::inst_non, IndexedIndirect, 1),  (0x29, LDA, D::inst_non, IndexedIndirect, 1),  (0x2A, LDA, D::inst_non, IndexedIndirect, 1),  (0x2B, LDA, D::inst_non, IndexedIndirect, 1),
+/*0x28*/ (0x28, PLP, D::inst_plp, Implied,         4),  (0x29, LDA, D::inst_non, IndexedIndirect, 1),  (0x2A, LDA, D::inst_non, IndexedIndirect, 1),  (0x2B, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x2C*/ (0x2C, LDA, D::inst_non, IndexedIndirect, 1),  (0x2D, LDA, D::inst_non, IndexedIndirect, 1),  (0x2E, LDA, D::inst_non, IndexedIndirect, 1),  (0x2F, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x30*/ (0x30, LDA, D::inst_non, IndexedIndirect, 1),  (0x31, LDA, D::inst_non, IndexedIndirect, 1),  (0x32, LDA, D::inst_non, IndexedIndirect, 1),  (0x33, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x34*/ (0x34, LDA, D::inst_non, IndexedIndirect, 1),  (0x35, LDA, D::inst_non, IndexedIndirect, 1),  (0x36, LDA, D::inst_non, IndexedIndirect, 1),  (0x37, LDA, D::inst_non, IndexedIndirect, 1),
@@ -29,20 +29,20 @@ static INST_TABLE: &[(u8, Opcode, InstPtr, AddressingMode, u8)] = {
 /*0x3C*/ (0x3C, LDA, D::inst_non, IndexedIndirect, 1),  (0x3D, LDA, D::inst_non, IndexedIndirect, 1),  (0x3E, LDA, D::inst_non, IndexedIndirect, 1),  (0x3F, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x40*/ (0x40, LDA, D::inst_non, IndexedIndirect, 1),  (0x41, LDA, D::inst_non, IndexedIndirect, 1),  (0x42, LDA, D::inst_non, IndexedIndirect, 1),  (0x43, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x44*/ (0x44, LDA, D::inst_non, IndexedIndirect, 1),  (0x45, LDA, D::inst_non, IndexedIndirect, 1),  (0x46, LDA, D::inst_non, IndexedIndirect, 1),  (0x47, LDA, D::inst_non, IndexedIndirect, 1),
-/*0x48*/ (0x48, LDA, D::inst_non, IndexedIndirect, 1),  (0x49, LDA, D::inst_non, IndexedIndirect, 1),  (0x4A, LDA, D::inst_non, IndexedIndirect, 1),  (0x4B, LDA, D::inst_non, IndexedIndirect, 1),
+/*0x48*/ (0x48, PHA, D::inst_pha, Implied,         3),  (0x49, LDA, D::inst_non, IndexedIndirect, 1),  (0x4A, LDA, D::inst_non, IndexedIndirect, 1),  (0x4B, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x4C*/ (0x4C, LDA, D::inst_non, IndexedIndirect, 1),  (0x4D, LDA, D::inst_non, IndexedIndirect, 1),  (0x4E, LDA, D::inst_non, IndexedIndirect, 1),  (0x4F, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x50*/ (0x50, LDA, D::inst_non, IndexedIndirect, 1),  (0x51, LDA, D::inst_non, IndexedIndirect, 1),  (0x52, LDA, D::inst_non, IndexedIndirect, 1),  (0x53, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x54*/ (0x54, LDA, D::inst_non, IndexedIndirect, 1),  (0x55, LDA, D::inst_non, IndexedIndirect, 1),  (0x56, LDA, D::inst_non, IndexedIndirect, 1),  (0x57, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x58*/ (0x58, LDA, D::inst_non, IndexedIndirect, 1),  (0x59, LDA, D::inst_non, IndexedIndirect, 1),  (0x5A, LDA, D::inst_non, IndexedIndirect, 1),  (0x5B, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x5C*/ (0x5C, LDA, D::inst_non, IndexedIndirect, 1),  (0x5D, LDA, D::inst_non, IndexedIndirect, 1),  (0x5E, LDA, D::inst_non, IndexedIndirect, 1),  (0x5F, LDA, D::inst_non, IndexedIndirect, 1),
-/*0x60*/ (0x60, LDA, D::inst_non, IndexedIndirect, 1),  (0x61, LDA, D::inst_non, IndexedIndirect, 1),  (0x62, LDA, D::inst_non, IndexedIndirect, 1),  (0x63, LDA, D::inst_non, IndexedIndirect, 1),
-/*0x64*/ (0x64, LDA, D::inst_non, IndexedIndirect, 1),  (0x65, LDA, D::inst_non, IndexedIndirect, 1),  (0x66, LDA, D::inst_non, IndexedIndirect, 1),  (0x67, LDA, D::inst_non, IndexedIndirect, 1),
-/*0x68*/ (0x68, LDA, D::inst_non, IndexedIndirect, 1),  (0x69, LDA, D::inst_non, IndexedIndirect, 1),  (0x6A, LDA, D::inst_non, IndexedIndirect, 1),  (0x6B, LDA, D::inst_non, IndexedIndirect, 1),
-/*0x6C*/ (0x6C, LDA, D::inst_non, IndexedIndirect, 1),  (0x6D, LDA, D::inst_non, IndexedIndirect, 1),  (0x6E, LDA, D::inst_non, IndexedIndirect, 1),  (0x6F, LDA, D::inst_non, IndexedIndirect, 1),
-/*0x70*/ (0x70, LDA, D::inst_non, IndexedIndirect, 1),  (0x71, LDA, D::inst_non, IndexedIndirect, 1),  (0x72, LDA, D::inst_non, IndexedIndirect, 1),  (0x73, LDA, D::inst_non, IndexedIndirect, 1),
-/*0x74*/ (0x74, LDA, D::inst_non, IndexedIndirect, 1),  (0x75, LDA, D::inst_non, IndexedIndirect, 1),  (0x76, LDA, D::inst_non, IndexedIndirect, 1),  (0x77, LDA, D::inst_non, IndexedIndirect, 1),
-/*0x78*/ (0x78, LDA, D::inst_non, IndexedIndirect, 1),  (0x79, LDA, D::inst_non, IndexedIndirect, 1),  (0x7A, LDA, D::inst_non, IndexedIndirect, 1),  (0x7B, LDA, D::inst_non, IndexedIndirect, 1),
-/*0x7C*/ (0x7C, LDA, D::inst_non, IndexedIndirect, 1),  (0x7D, LDA, D::inst_non, IndexedIndirect, 1),  (0x7E, LDA, D::inst_non, IndexedIndirect, 1),  (0x7F, LDA, D::inst_non, IndexedIndirect, 1),
+/*0x60*/ (0x60, LDA, D::inst_non, IndexedIndirect, 1),  (0x61, ADC, D::inst_adc, IndexedIndirect, 6),  (0x62, LDA, D::inst_non, IndexedIndirect, 1),  (0x63, LDA, D::inst_non, IndexedIndirect, 1),
+/*0x64*/ (0x64, LDA, D::inst_non, IndexedIndirect, 1),  (0x65, ADC, D::inst_adc, Zeropage,        3),  (0x66, LDA, D::inst_non, IndexedIndirect, 1),  (0x67, LDA, D::inst_non, IndexedIndirect, 1),
+/*0x68*/ (0x68, PLA, D::inst_pla, Implied,         4),  (0x69, ADC, D::inst_adc, Immediate,       2),  (0x6A, LDA, D::inst_non, IndexedIndirect, 1),  (0x6B, LDA, D::inst_non, IndexedIndirect, 1),
+/*0x6C*/ (0x6C, LDA, D::inst_non, IndexedIndirect, 1),  (0x6D, ADC, D::inst_adc, Absolute,        4),  (0x6E, LDA, D::inst_non, IndexedIndirect, 1),  (0x6F, LDA, D::inst_non, IndexedIndirect, 1),
+/*0x70*/ (0x70, LDA, D::inst_non, IndexedIndirect, 1),  (0x71, ADC, D::inst_adc, IndirectIndexed, 5),  (0x72, LDA, D::inst_non, IndexedIndirect, 1),  (0x73, LDA, D::inst_non, IndexedIndirect, 1),
+/*0x74*/ (0x74, LDA, D::inst_non, IndexedIndirect, 1),  (0x75, ADC, D::inst_adc, ZeropageX,       4),  (0x76, LDA, D::inst_non, IndexedIndirect, 1),  (0x77, LDA, D::inst_non, IndexedIndirect, 1),
+/*0x78*/ (0x78, LDA, D::inst_non, IndexedIndirect, 1),  (0x79, ADC, D::inst_adc, AbsoluteY,       4),  (0x7A, LDA, D::inst_non, IndexedIndirect, 1),  (0x7B, LDA, D::inst_non, IndexedIndirect, 1),
+/*0x7C*/ (0x7C, LDA, D::inst_non, IndexedIndirect, 1),  (0x7D, ADC, D::inst_adc, AbsoluteX,       4),  (0x7E, LDA, D::inst_non, IndexedIndirect, 1),  (0x7F, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x80*/ (0x80, LDA, D::inst_non, IndexedIndirect, 1),  (0x81, LDA, D::inst_non, IndexedIndirect, 1),  (0x82, LDA, D::inst_non, IndexedIndirect, 1),  (0x83, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x84*/ (0x84, LDA, D::inst_non, IndexedIndirect, 1),  (0x85, LDA, D::inst_non, IndexedIndirect, 1),  (0x86, LDA, D::inst_non, IndexedIndirect, 1),  (0x87, LDA, D::inst_non, IndexedIndirect, 1),
 /*0x88*/ (0x88, LDA, D::inst_non, IndexedIndirect, 1),  (0x89, LDA, D::inst_non, IndexedIndirect, 1),  (0x8A, LDA, D::inst_non, IndexedIndirect, 1),  (0x8B, LDA, D::inst_non, IndexedIndirect, 1),
@@ -67,14 +67,14 @@ static INST_TABLE: &[(u8, Opcode, InstPtr, AddressingMode, u8)] = {
 /*0xD4*/ (0xD4, LDA, D::inst_non, IndexedIndirect, 1),  (0xD5, LDA, D::inst_non, IndexedIndirect, 1),  (0xD6, LDA, D::inst_non, IndexedIndirect, 1),  (0xD7, LDA, D::inst_non, IndexedIndirect, 1),
 /*0xD8*/ (0xD8, LDA, D::inst_non, IndexedIndirect, 1),  (0xD9, LDA, D::inst_non, IndexedIndirect, 1),  (0xDA, LDA, D::inst_non, IndexedIndirect, 1),  (0xDB, LDA, D::inst_non, IndexedIndirect, 1),
 /*0xDC*/ (0xDC, LDA, D::inst_non, IndexedIndirect, 1),  (0xDD, LDA, D::inst_non, IndexedIndirect, 1),  (0xDE, LDA, D::inst_non, IndexedIndirect, 1),  (0xDF, LDA, D::inst_non, IndexedIndirect, 1),
-/*0xE0*/ (0xE0, LDA, D::inst_non, IndexedIndirect, 1),  (0xE1, LDA, D::inst_non, IndexedIndirect, 1),  (0xE2, LDA, D::inst_non, IndexedIndirect, 1),  (0xE3, LDA, D::inst_non, IndexedIndirect, 1),
-/*0xE4*/ (0xE4, LDA, D::inst_non, IndexedIndirect, 1),  (0xE5, LDA, D::inst_non, IndexedIndirect, 1),  (0xE6, LDA, D::inst_non, IndexedIndirect, 1),  (0xE7, LDA, D::inst_non, IndexedIndirect, 1),
-/*0xE8*/ (0xE8, LDA, D::inst_non, IndexedIndirect, 1),  (0xE9, LDA, D::inst_non, IndexedIndirect, 1),  (0xEA, LDA, D::inst_non, IndexedIndirect, 1),  (0xEB, LDA, D::inst_non, IndexedIndirect, 1),
-/*0xEC*/ (0xEC, LDA, D::inst_non, IndexedIndirect, 1),  (0xED, LDA, D::inst_non, IndexedIndirect, 1),  (0xEE, LDA, D::inst_non, IndexedIndirect, 1),  (0xEF, LDA, D::inst_non, IndexedIndirect, 1),
-/*0xF0*/ (0xF0, LDA, D::inst_non, IndexedIndirect, 1),  (0xF1, LDA, D::inst_non, IndexedIndirect, 1),  (0xF2, LDA, D::inst_non, IndexedIndirect, 1),  (0xF3, LDA, D::inst_non, IndexedIndirect, 1),
-/*0xF4*/ (0xF4, LDA, D::inst_non, IndexedIndirect, 1),  (0xF5, LDA, D::inst_non, IndexedIndirect, 1),  (0xF6, LDA, D::inst_non, IndexedIndirect, 1),  (0xF7, LDA, D::inst_non, IndexedIndirect, 1),
-/*0xF8*/ (0xF8, LDA, D::inst_non, IndexedIndirect, 1),  (0xF9, LDA, D::inst_non, IndexedIndirect, 1),  (0xFA, LDA, D::inst_non, IndexedIndirect, 1),  (0xFB, LDA, D::inst_non, IndexedIndirect, 1),
-/*0xFC*/ (0xFC, LDA, D::inst_non, IndexedIndirect, 1),  (0xFD, LDA, D::inst_non, IndexedIndirect, 1),  (0xFE, LDA, D::inst_non, IndexedIndirect, 1),  (0xFF, LDA, D::inst_non, IndexedIndirect, 1),
+/*0xE0*/ (0xE0, LDA, D::inst_non, IndexedIndirect, 1),  (0xE1, SBC, D::inst_sbc, IndexedIndirect, 6),  (0xE2, LDA, D::inst_non, IndexedIndirect, 1),  (0xE3, LDA, D::inst_non, IndexedIndirect, 1),
+/*0xE4*/ (0xE4, LDA, D::inst_non, IndexedIndirect, 1),  (0xE5, SBC, D::inst_sbc, Zeropage,        3),  (0xE6, LDA, D::inst_non, IndexedIndirect, 1),  (0xE7, LDA, D::inst_non, IndexedIndirect, 1),
+/*0xE8*/ (0xE8, LDA, D::inst_non, IndexedIndirect, 1),  (0xE9, SBC, D::inst_sbc, Immediate,       2),  (0xEA, LDA, D::inst_non, IndexedIndirect, 1),  (0xEB, LDA, D::inst_non, IndexedIndirect, 1),
+/*0xEC*/ (0xEC, LDA, D::inst_non, IndexedIndirect, 1),  (0xED, SBC, D::inst_sbc, Absolute,        4),  (0xEE, LDA, D::inst_non, IndexedIndirect, 1),  (0xEF, LDA, D::inst_non, IndexedIndirect, 1),
+/*0xF0*/ (0xF0, LDA, D::inst_non, IndexedIndirect, 1),  (0xF1, SBC, D::inst_sbc, IndirectIndexed, 5),  (0xF2, LDA, D::inst_non, IndexedIndirect, 1),  (0xF3, LDA, D::inst_non, IndexedIndirect, 1),
+/*0xF4*/ (0xF4, LDA, D::inst_non, IndexedIndirect, 1),  (0xF5, SBC, D::inst_sbc, ZeropageX,       4),  (0xF6, LDA, D::inst_non, IndexedIndirect, 1),  (0xF7, LDA, D::inst_non, IndexedIndirect, 1),
+/*0xF8*/ (0xF8, LDA, D::inst_non, IndexedIndirect, 1),  (0xF9, SBC, D::inst_sbc, AbsoluteY,       4),  (0xFA, LDA, D::inst_non, IndexedIndirect, 1),  (0xFB, LDA, D::inst_non, IndexedIndirect, 1),
+/*0xFC*/ (0xFC, LDA, D::inst_non, IndexedIndirect, 1),  (0xFD, SBC, D::inst_sbc, AbsoluteX,       4),  (0xFE, LDA, D::inst_non, IndexedIndirect, 1),  (0xFF, LDA, D::inst_non, IndexedIndirect, 1),
     ]
 };
 
@@ -90,7 +90,7 @@ pub struct Cpu {
     /// status register
     pub reg_p: u8,
     /// stack pointer
-    pub sp: u8,
+    pub sp: i16,
     /// program counter
     pub pc: u16,
 }
@@ -163,16 +163,39 @@ impl Device {
     fn inst_adc(&mut self, mode: AddressingMode) -> InstResult {
         let param_addr = self.fetch_param_addr(mode)?;
         let param_val = self.ram_read(param_addr)?;
-        let (mut res, mut overflow) = param_val.overflowing_add(self.cpu.reg_a);
+        let (mut res, mut overflow) = self.cpu.reg_a.overflowing_add(param_val);
         if self.get_flag(Flag::Carry) {
             let (res_carry, overflow_carry) = res.overflowing_add(1);
             res = res_carry;
             overflow |= overflow_carry;
         }
+        self.set_flag(
+            Flag::Overflow,
+            extract_overflow_bit(param_val, self.cpu.reg_a, res),
+        );
         self.cpu.reg_a = res;
         self.set_flag(Flag::Carry, overflow);
         self.update_zero_negative_flags(self.cpu.reg_a);
+        Meta::normal().into()
+    }
 
+    fn inst_sbc(&mut self, mode: AddressingMode) -> InstResult {
+        // TODO: deduplicate code
+        let param_addr = self.fetch_param_addr(mode)?;
+        let param_val = self.ram_read(param_addr)?;
+        let (mut res, mut overflow) = self.cpu.reg_a.overflowing_sub(param_val);
+        if !self.get_flag(Flag::Carry) {
+            let (res_carry, overflow_carry) = res.overflowing_sub(1);
+            res = res_carry;
+            overflow |= overflow_carry;
+        }
+        self.set_flag(
+            Flag::Overflow,
+            extract_overflow_bit(param_val, self.cpu.reg_a, res),
+        );
+        self.cpu.reg_a = res;
+        self.set_flag(Flag::Carry, !overflow);
+        self.update_zero_negative_flags(self.cpu.reg_a);
         Meta::normal().into()
     }
 
@@ -209,6 +232,37 @@ impl Device {
     fn inst_sta(&mut self, mode: AddressingMode) -> InstResult {
         let param_addr = self.fetch_param_addr(mode)?;
         self.ram_write(param_addr, self.cpu.reg_a)?;
+        Meta::normal().into()
+    }
+
+    /// PHA
+    fn inst_pha(&mut self, _mode: AddressingMode) -> InstResult {
+        self.stack_push(self.cpu.reg_a)?;
+        Meta::normal().into()
+    }
+
+    /// PHP
+    fn inst_php(&mut self, _mode: AddressingMode) -> InstResult {
+        self.stack_push(self.cpu.reg_p | BITS45)?;
+        Meta::normal().into()
+    }
+
+    /// PLA
+    fn inst_pla(&mut self, _mode: AddressingMode) -> InstResult {
+        self.cpu.reg_a = self.stack_pop()?;
+        self.update_zero_negative_flags(self.cpu.reg_a);
+        Meta::normal().into()
+    }
+
+    /// PLP
+    fn inst_plp(&mut self, _mode: AddressingMode) -> InstResult {
+        let val = self.stack_pop()?;
+        self.cpu.reg_p = (self.cpu.reg_p & BITS45) | (val & !BITS45);
+        Meta::normal().into()
+    }
+
+    fn inst_rti(&mut self, _mode: AddressingMode) -> InstResult {
+        // TODO: disregard bits 4,5
         Meta::normal().into()
     }
 }

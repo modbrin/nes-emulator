@@ -32,10 +32,44 @@ impl Device {
     /// Write little-endian u16 to RAM
     pub(crate) fn ram_write_le_u16(&mut self, addr: u16, val: u16) -> Result<(), NesError> {
         let lo = (val & 0x00FF) as u8;
-        let hi = ((val & 0xFF00) >> 8) as u8;
+        let hi = (val >> 8) as u8;
         self.ram_write(addr, lo)?;
         self.ram_write(addr.checked_add(1).ok_or(NesError::RamOutOfBounds)?, hi)?;
         Ok(())
+    }
+
+    pub(crate) fn stack_push(&mut self, val: u8) -> Result<(), NesError> {
+        self.cpu.sp += 1;
+        let addr = STACK_SECTION.end - self.cpu.sp as u16;
+        if addr < STACK_SECTION.start {
+            return Err(NesError::StackOverflow);
+        }
+        self.ram_write(addr, val)?;
+        Ok(())
+    }
+
+    pub(crate) fn stack_pop(&mut self) -> Result<u8, NesError> {
+        if self.cpu.sp < 1 {
+            return Err(NesError::StackUnderflow);
+        }
+        let addr = STACK_SECTION.end - self.cpu.sp as u16;
+        let val = self.ram_read(addr)?;
+        self.cpu.sp -= 1;
+        Ok(val)
+    }
+
+    pub(crate) fn stack_push_le_u16(&mut self, val: u16) -> Result<(), NesError> {
+        let lo = (val & 0x00FF) as u8;
+        let hi = (val >> 8) as u8;
+        self.stack_push(hi)?;
+        self.stack_push(lo)?;
+        Ok(())
+    }
+
+    pub(crate) fn stack_pop_le_u16(&mut self) -> Result<u16, NesError> {
+        let lo = self.stack_pop()? as u16;
+        let hi = self.stack_pop()? as u16;
+        Ok(hi << 8 | lo)
     }
 
     pub(crate) fn fetch_param_addr(&mut self, mode: AddressingMode) -> Result<u16, NesError> {

@@ -77,6 +77,9 @@ impl ByteExt for u8 {
     }
 }
 
+/// Check if addition of two values `a` and `b` with same sign, results
+/// in a different sign. E.g. adding positive numbers results in negative number,
+/// or adding negative numbers results in positive number.
 pub fn extract_overflow_bit(a: u8, b: u8, result: u8) -> bool {
     (a ^ result) & (b ^ result) & 0x80 != 0
 }
@@ -89,8 +92,10 @@ mod tests {
     fn overflow_bit_checks() {
         let expect_overflow = |a: u8, b: u8, bit: bool| {
             let result = a.wrapping_add(b);
-            assert_eq!(extract_overflow_bit(a, b, result), bit)
+            assert_eq!(extract_overflow_bit(a, b, result), bit);
+            assert_eq!(extract_overflow_bit(a, b, result.wrapping_add(1)), bit);
         };
+        let as_u8 = |val: i8| -> u8 { unsafe { std::mem::transmute(val) } };
 
         expect_overflow(80, 16, false);
         expect_overflow(80, 80, true);
@@ -100,5 +105,14 @@ mod tests {
         expect_overflow(208, 80, false);
         expect_overflow(208, 144, true);
         expect_overflow(208, 208, false);
+
+        expect_overflow(as_u8(-80), as_u8(-16), false);
+        expect_overflow(as_u8(-80), as_u8(-80), true);
+        expect_overflow(as_u8(-80), as_u8(112), false);
+        expect_overflow(as_u8(-80), as_u8(48), false);
+        expect_overflow(as_u8(48), as_u8(-16), false);
+        expect_overflow(as_u8(48), as_u8(-80), false);
+        expect_overflow(as_u8(48), as_u8(112), true);
+        expect_overflow(as_u8(48), as_u8(48), false);
     }
 }
