@@ -28,8 +28,6 @@ pub const BIT5: u8 = 1 << 5;
 pub const BIT6: u8 = 1 << 6;
 pub const BIT7: u8 = 1 << 7;
 
-pub const BITS45: u8 = BIT4 | BIT5;
-
 #[rustfmt::skip]
 #[derive(Clone, Copy)]
 #[repr(u8)]
@@ -62,11 +60,14 @@ pub enum Opcode {
     RTS, SBC, SEC, SED, SEI, STA, STX, STY, TAX, TAY, TSX, TXA, TXS, TYA,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum AddressingMode {
-    // Accumulator, A
-    // Relative, label
-    // Indirect, (a)
+    /// label
+    Relative,
+    /// (a)
+    Indirect,
+    /// A
+    Accumulator,
     /// -- no params --
     Implied,
     /// #i

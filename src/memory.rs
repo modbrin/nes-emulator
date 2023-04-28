@@ -125,7 +125,7 @@ impl Device {
                 let hi = self.ram_read(addr.wrapping_add(1) as u16)? as u16;
                 Ok((hi << 8 | lo).wrapping_add(self.cpu.reg_y as u16))
             }
-            Implied => Err(NesError::UnsupportedAddressingMode),
+            _ => Err(NesError::UnsupportedAddressingMode),
         }
     }
 }

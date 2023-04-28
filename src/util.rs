@@ -1,5 +1,7 @@
 //! This module contains supplementary utilites used by main logic
 
+use crate::prelude::*;
+
 #[derive(Clone, Copy, Debug)]
 pub enum NesError {
     /// Attempt to access memory out of bounds
@@ -14,7 +16,7 @@ pub enum NesError {
     PcUnderflow,
     /// ROM is larger than designated region in memory
     OversizedRom,
-    /// Addressing Mode is not supported currently
+    /// Addressing Mode is not supported by this instruction
     UnsupportedAddressingMode,
     /// Invoking logic that is not implemented yet
     Unimplemented,
@@ -75,6 +77,13 @@ impl ByteExt for u8 {
     fn unset_by_mask(&mut self, mask: u8) {
         *self &= !mask;
     }
+}
+
+pub fn expect_mode(mode_a: AddressingMode, mode_b: AddressingMode) -> Result<(), NesError> {
+    if mode_a != mode_b {
+        return Err(NesError::UnsupportedAddressingMode);
+    }
+    Ok(())
 }
 
 /// Check if addition of two values `a` and `b` with same sign, results
