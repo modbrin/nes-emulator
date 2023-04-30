@@ -39,22 +39,20 @@ impl Device {
     }
 
     pub(crate) fn stack_push(&mut self, val: u8) -> Result<(), NesError> {
-        self.cpu.sp += 1;
-        let addr = STACK_SECTION.end - self.cpu.sp as u16;
-        if addr < STACK_SECTION.start {
+        if self.cpu.sp == 0 {
             return Err(NesError::StackOverflow);
         }
-        self.ram_write(addr, val)?;
+        self.ram_write(STACK_SECTION.start + self.cpu.sp as u16, val)?;
+        self.cpu.sp -= 1;
         Ok(())
     }
 
     pub(crate) fn stack_pop(&mut self) -> Result<u8, NesError> {
-        if self.cpu.sp < 1 {
+        if self.cpu.sp == u8::MAX {
             return Err(NesError::StackUnderflow);
         }
-        let addr = STACK_SECTION.end - self.cpu.sp as u16;
-        let val = self.ram_read(addr)?;
-        self.cpu.sp -= 1;
+        self.cpu.sp += 1;
+        let val = self.ram_read(STACK_SECTION.start + self.cpu.sp as u16)?;
         Ok(val)
     }
 

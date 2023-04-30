@@ -104,9 +104,9 @@ impl Device {
         self.cpu.reg_a = 0;
         self.cpu.reg_x = 0;
         self.cpu.reg_y = 0;
-        self.cpu.reg_p = Flag::B2 as u8;
+        self.cpu.reg_p = Flag::B2 as u8 | Flag::IntDis as u8;
         self.cpu.pc = self.ram_read_le_u16(PC_RESET_ADDR)?;
-        self.cpu.sp = -1;
+        self.cpu.sp = 0xfd;
         Ok(())
     }
 }
