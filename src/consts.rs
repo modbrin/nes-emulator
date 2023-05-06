@@ -1,6 +1,4 @@
-//! This page contains constants, including system details and common numeric/hardware values
-
-use std::ops::Range;
+//! This module contains constants, including system details and common numeric/hardware values
 
 /// available ram of cpu, 2kb
 pub const RAM_SIZE: usize = 2 * 1024;
@@ -10,12 +8,12 @@ pub const VRAM_SIZE: usize = 2 * 1024;
 pub const CPU_FREQ: usize = 1_790_000;
 /// ppu frequency, 5.37 MHz
 pub const PPU_FREQ: usize = 5_370_000;
-/// size of zeropage region in memory
-pub const ZEROPAGE_SIZE: usize = 0x100;
 /// memory indices marking start and end of stack section in memory
-pub const STACK_SECTION: Range<u16> = 0x0100..0x01FF;
+pub const STACK_SECTION_START: u16 = 0x0100;
+pub const STACK_SECTION_END: u16 = 0x01FF;
 /// memory indices marking start and end of rom section in memory
-pub const ROM_SECTION: Range<usize> = 0x8000..0xFFFF;
+pub const ROM_SECTION_START: u16 = 0x8000;
+pub const ROM_SECTION_END: u16 = 0xFFFF;
 /// memory location where startup value for program counter is stored
 pub const PC_RESET_ADDR: u16 = 0xFFFC;
 
@@ -27,6 +25,20 @@ pub const BIT4: u8 = 1 << 4;
 pub const BIT5: u8 = 1 << 5;
 pub const BIT6: u8 = 1 << 6;
 pub const BIT7: u8 = 1 << 7;
+
+pub const CPU_MMAP_RNG_START: u16 = 0x0000;
+pub const CPU_MMAP_RNG_END: u16 = 0x1FFF;
+pub const PPU_MMAP_RNG_START: u16 = 0x2000;
+pub const PPU_MMAP_RNG_END: u16 = 0x3FFF;
+pub const CPU_MIRROR_MASK: u16 = 0x07FF;
+pub const PPU_MIRROR_MASK: u16 = 0x0207;
+
+pub const NES_TAG: &[u8] = &[0x4E, 0x45, 0x53, 0x1A];
+pub const PRG_BANK_SIZE: usize = 16 * 1024; // 16 kB
+pub const CHR_BANK_SIZE: usize = 8 * 1024; // 8 kB
+pub const ROM_TRAINER_SIZE: usize = 512; // 512 bytes
+
+pub const SIZE_16KB: usize = 0x4000;
 
 #[rustfmt::skip]
 #[derive(Clone, Copy)]
@@ -52,7 +64,7 @@ pub enum Flag {
 }
 
 #[rustfmt::skip]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Opcode {
     ADC, AND, ASL, BCC, BCS, BEQ, BIT, BMI, BNE, BPL, BRK, BVC, BVS, CLC,
     CLD, CLI, CLV, CMP, CPX, CPY, DEC, DEX, DEY, EOR, INC, INX, INY, JMP,
