@@ -27,31 +27,10 @@ pub enum NesError {
 pub struct InstructionMetadata {
     /// Number of cycles consumed by instruction
     pub cycles: u8,
+    /// program counter state after execution
+    pub update_pc: u16,
     /// Should the execution be aborted
     pub is_break: bool,
-}
-
-impl InstructionMetadata {
-    pub fn with_cycles(cycles: u8) -> Self {
-        Self {
-            cycles,
-            is_break: false,
-        }
-    }
-
-    pub fn normal() -> Self {
-        Self {
-            cycles: 0,
-            is_break: false,
-        }
-    }
-
-    pub fn stop() -> Self {
-        Self {
-            cycles: 0,
-            is_break: true,
-        }
-    }
 }
 
 pub type InstResult = Result<InstructionMetadata, NesError>;
@@ -59,6 +38,20 @@ pub type InstResult = Result<InstructionMetadata, NesError>;
 impl From<InstructionMetadata> for InstResult {
     fn from(meta: InstructionMetadata) -> Self {
         InstResult::Ok(meta)
+    }
+}
+
+/// Represents address extracted from operands
+pub struct AddrRes {
+    /// Parameter address pointed via addressing mode
+    pub addr: u16,
+    /// Program counter state after param extraction
+    pub pc_upd: u16,
+}
+
+impl AddrRes {
+    pub fn new(addr: u16, pc_upd: u16) -> Self {
+        Self { addr, pc_upd }
     }
 }
 

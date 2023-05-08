@@ -40,6 +40,7 @@ impl Device {
             // process instruction
             let opcode = self.fetch_next()?;
             let meta = self.decode_and_execute(opcode)?;
+            self.cpu.pc = meta.update_pc;
 
             // match cpu timing
             let elapsed = clock.elapsed();
@@ -76,12 +77,19 @@ impl Device {
 
     /// increment `pc` by 1
     pub(crate) fn skip_one(&mut self) -> Result<(), NesError> {
-        self.cpu.pc = self.cpu.pc.checked_add(1).ok_or(NesError::PcOverflow)?;
+        self.cpu.pc = self.pc_plus_n(1)?;
         Ok(())
     }
+
+    /// increment `pc` by n
     pub(crate) fn skip_n(&mut self, n: u16) -> Result<(), NesError> {
-        self.cpu.pc = self.cpu.pc.checked_add(n).ok_or(NesError::PcOverflow)?;
+        self.cpu.pc = self.pc_plus_n(n)?;
         Ok(())
+    }
+
+    /// get value of `pc` incremented by n
+    pub(crate) fn pc_plus_n(&mut self, n: u16) -> Result<u16, NesError> {
+        Ok(self.cpu.pc.checked_add(n).ok_or(NesError::PcOverflow)?)
     }
 
     pub fn reset(&mut self) -> Result<(), NesError> {

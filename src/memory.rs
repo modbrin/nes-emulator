@@ -36,58 +36,64 @@ impl Device {
         Ok((hi << 8) | lo)
     }
 
-    pub(crate) fn fetch_param_addr(&mut self, mode: AddressingMode) -> Result<u16, NesError> {
+    pub(crate) fn fetch_param_addr(&mut self, mode: AddressingMode) -> Result<AddrRes, NesError> {
         use AddressingMode::*;
         match mode {
             Immediate => {
                 let addr = self.cpu.pc;
-                self.skip_one()?;
-                Ok(addr)
+                Ok(AddrRes::new(addr, self.pc_plus_n(1)?))
             }
             Absolute => {
                 let addr = self.read_le_u16(self.cpu.pc)?;
-                self.skip_n(2)?;
-                Ok(addr)
+                Ok(AddrRes::new(addr, self.pc_plus_n(2)?))
             }
             AbsoluteX => {
                 let addr = self.read_le_u16(self.cpu.pc)?;
-                self.skip_n(2)?;
-                Ok(addr.wrapping_add(self.cpu.reg_x as u16))
+                Ok(AddrRes::new(
+                    addr.wrapping_add(self.cpu.reg_x as u16),
+                    self.pc_plus_n(2)?,
+                ))
             }
             AbsoluteY => {
                 let addr = self.read_le_u16(self.cpu.pc)?;
-                self.skip_n(2)?;
-                Ok(addr.wrapping_add(self.cpu.reg_y as u16))
+                Ok(AddrRes::new(
+                    addr.wrapping_add(self.cpu.reg_y as u16),
+                    self.pc_plus_n(2)?,
+                ))
             }
             Zeropage => {
                 let addr = self.read_one(self.cpu.pc)?;
-                self.skip_one()?;
-                Ok(addr as u16)
+                Ok(AddrRes::new(addr as u16, self.pc_plus_n(1)?))
             }
             ZeropageX => {
                 let addr = self.read_one(self.cpu.pc)?;
-                self.skip_one()?;
-                Ok(addr.wrapping_add(self.cpu.reg_x) as u16)
+                Ok(AddrRes::new(
+                    addr.wrapping_add(self.cpu.reg_x) as u16,
+                    self.pc_plus_n(1)?,
+                ))
             }
             ZeropageY => {
                 let addr = self.read_one(self.cpu.pc)?;
-                self.skip_one()?;
-                Ok(addr.wrapping_add(self.cpu.reg_y) as u16)
+                Ok(AddrRes::new(
+                    addr.wrapping_add(self.cpu.reg_y) as u16,
+                    self.pc_plus_n(1)?,
+                ))
             }
             IndexedIndirect => {
                 let param = self.read_one(self.cpu.pc)?;
-                self.skip_one()?;
                 let addr = param.wrapping_add(self.cpu.reg_x);
                 let lo = self.read_one(addr as u16)? as u16;
                 let hi = self.read_one(addr.wrapping_add(1) as u16)? as u16;
-                Ok((hi << 8) | lo)
+                Ok(AddrRes::new((hi << 8) | lo, self.pc_plus_n(1)?))
             }
             IndirectIndexed => {
                 let addr = self.read_one(self.cpu.pc)?;
-                self.skip_one()?;
                 let lo = self.read_one(addr as u16)? as u16;
                 let hi = self.read_one(addr.wrapping_add(1) as u16)? as u16;
-                Ok(((hi << 8) | lo).wrapping_add(self.cpu.reg_y as u16))
+                Ok(AddrRes::new(
+                    ((hi << 8) | lo).wrapping_add(self.cpu.reg_y as u16),
+                    self.pc_plus_n(1)?,
+                ))
             }
             _ => Err(NesError::UnsupportedAddressingMode),
         }
