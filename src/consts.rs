@@ -72,7 +72,7 @@ pub enum Opcode {
     JSR, LDA, LDX, LDY, LSR, NOP, ORA, PHA, PHP, PLA, PLP, ROL, ROR, RTI, 
     RTS, SBC, SEC, SED, SEI, STA, STX, STY, TAX, TAY, TSX, TXA, TXS, TYA,
     // unofficial opcodes
-    ANC, SAX, ARR,  ASR, LXA, SHA, SBX, DCP,  NOP2, ISC, JAM, LAE, LAX, NOP3,
+    ANC, SAX, ARR,  ASR, LXA, SHA, SBX, DCP,  NOP2, ISB, JAM, LAE, LAX, NOP3,
     RLA, RRA, SBC2, SLO, SRE, SHX, SHY, NOP4, ANE,  SHS,
 }
 
