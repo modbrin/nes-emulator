@@ -65,6 +65,7 @@ pub enum Flag {
 
 #[rustfmt::skip]
 #[derive(Clone, Copy, Debug)]
+#[repr(u8)]
 pub enum Opcode {
     // official opcodes
     ADC, AND, ASL, BCC, BCS, BEQ, BIT, BMI, BNE, BPL, BRK, BVC, BVS, CLC,

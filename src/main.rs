@@ -259,7 +259,11 @@ fn trace(device: &Device) {
 
     let pc_str = format!("{:04x}", device.cpu.pc).to_uppercase();
 
-    let text_op = format!(" {:?}", op);
+    let text_op = if op as u8 >= Opcode::ANC as u8 {
+        format!("{}{:?}", "*", op)[0..4].to_string()
+    } else {
+        format!("{}{:?}", " ", op)
+    };
 
     let b0 = device.bus.read_one(device.cpu.pc).unwrap();
     let b1 = device.bus.read_one(device.cpu.pc + 1);

@@ -692,7 +692,6 @@ impl Device {
     /// SAX
     fn inst_sax(&mut self, mode: AddressingMode) -> InstResult {
         let val = self.cpu.reg_x & self.cpu.reg_a;
-        self.update_zero_negative_flags(val);
         let loc_addr = self.fetch_param_addr(mode)?;
         self.write_one(loc_addr.addr, val)?;
         self.result_pc(loc_addr.pc_upd)
