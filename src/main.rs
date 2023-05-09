@@ -24,11 +24,11 @@ mod rom;
 mod util;
 
 pub(crate) mod prelude {
-    pub use crate::consts::*;
     pub use crate::device::Device;
+
+    pub use crate::consts::*;
     pub use crate::memory::*;
     pub use crate::rom::*;
-    pub use crate::util::InstructionMetadata as Meta;
     pub use crate::util::*;
 }
 use prelude::*;
@@ -259,7 +259,7 @@ fn trace(device: &Device) {
 
     let pc_str = format!("{:04x}", device.cpu.pc).to_uppercase();
 
-    let text_op = format!("{:?}", op);
+    let text_op = format!(" {:?}", op);
 
     let b0 = device.bus.read_one(device.cpu.pc).unwrap();
     let b1 = device.bus.read_one(device.cpu.pc + 1);
@@ -284,7 +284,7 @@ fn trace(device: &Device) {
     .to_uppercase();
 
     println!(
-        "{}  {:8}  {} {:27} {}",
+        "{}  {:8} {} {:27} {}",
         pc_str, bytes_str, text_op, operands, registers
     );
 }

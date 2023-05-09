@@ -13,69 +13,69 @@ pub static INST_TABLE: &[(u8, Opcode, InstPtr, AddressingMode, u8)] = {
     &[
          /*0x00*/                                 /*0x01*/                                       /*0x02*/                                   /*0x03*/
 /*0x00*/ (0x00, BRK, D::inst_brk, Implied,   7),  (0x01, ORA, D::inst_ora, IndexedIndirect, 6),  (0x02, JAM, D::inst_jam, Implied,     0),  (0x03, SLO, D::inst_slo, IndexedIndirect, 8),
-/*0x04*/ (0x04, NOP2,D::inst_dop, Zeropage,  3),  (0x05, ORA, D::inst_ora, Zeropage,        3),  (0x06, ASL, D::inst_asl, Zeropage,    5),  (0x07, SLO, D::inst_slo, Zeropage, 5),
-/*0x08*/ (0x08, PHP, D::inst_php, Implied,   3),  (0x09, ORA, D::inst_ora, Immediate,       2),  (0x0A, ASL, D::inst_asl, Accumulator, 2),  (0x0B, ANC, D::inst_anc, Immediate, 2),
-/*0x0C*/ (0x0C, NOP, undef,       Implied,   1),  (0x0D, ORA, D::inst_ora, Absolute,        4),  (0x0E, ASL, D::inst_asl, Absolute,    6),  (0x0F, SLO, D::inst_slo, Absolute, 6),
+/*0x04*/ (0x04, NOP2,D::inst_dop, Zeropage,  3),  (0x05, ORA, D::inst_ora, Zeropage,        3),  (0x06, ASL, D::inst_asl, Zeropage,    5),  (0x07, SLO, D::inst_slo, Zeropage,        5),
+/*0x08*/ (0x08, PHP, D::inst_php, Implied,   3),  (0x09, ORA, D::inst_ora, Immediate,       2),  (0x0A, ASL, D::inst_asl, Accumulator, 2),  (0x0B, ANC, D::inst_anc, Immediate,       2),
+/*0x0C*/ (0x0C, NOP4,D::inst_top, Absolute,  4),  (0x0D, ORA, D::inst_ora, Absolute,        4),  (0x0E, ASL, D::inst_asl, Absolute,    6),  (0x0F, SLO, D::inst_slo, Absolute,        6),
 /*0x10*/ (0x10, BPL, D::inst_bpl, Relative,  2),  (0x11, ORA, D::inst_ora, IndirectIndexed, 5),  (0x12, JAM, D::inst_jam, Implied,     0),  (0x13, SLO, D::inst_slo, IndirectIndexed, 8),
-/*0x14*/ (0x14, NOP2,D::inst_dop, ZeropageX, 4),  (0x15, ORA, D::inst_ora, ZeropageX,       4),  (0x16, ASL, D::inst_asl, ZeropageX,   6),  (0x17, SLO, D::inst_slo, ZeropageX, 6),
-/*0x18*/ (0x18, CLC, D::inst_clc, Implied,   2),  (0x19, ORA, D::inst_ora, AbsoluteY,       4),  (0x1A, NOP, undef,       Implied,     1),  (0x1B, SLO, D::inst_slo, AbsoluteY, 7),
-/*0x1C*/ (0x1C, NOP, undef,       Implied,   1),  (0x1D, ORA, D::inst_ora, AbsoluteX,       4),  (0x1E, ASL, D::inst_asl, AbsoluteX,   7),  (0x1F, SLO, D::inst_slo, AbsoluteX, 7),
+/*0x14*/ (0x14, NOP2,D::inst_dop, ZeropageX, 4),  (0x15, ORA, D::inst_ora, ZeropageX,       4),  (0x16, ASL, D::inst_asl, ZeropageX,   6),  (0x17, SLO, D::inst_slo, ZeropageX,       6),
+/*0x18*/ (0x18, CLC, D::inst_clc, Implied,   2),  (0x19, ORA, D::inst_ora, AbsoluteY,       4),  (0x1A, NOP3,D::inst_nop3,Implied,     2),  (0x1B, SLO, D::inst_slo, AbsoluteY,       7),
+/*0x1C*/ (0x1C, NOP4,D::inst_top, AbsoluteX, 4),  (0x1D, ORA, D::inst_ora, AbsoluteX,       4),  (0x1E, ASL, D::inst_asl, AbsoluteX,   7),  (0x1F, SLO, D::inst_slo, AbsoluteX,       7),
 /*0x20*/ (0x20, JSR, D::inst_jsr, Absolute,  6),  (0x21, AND, D::inst_and, IndexedIndirect, 6),  (0x22, JAM, D::inst_jam, Implied,     0),  (0x23, RLA, D::inst_rla, IndexedIndirect, 8),
-/*0x24*/ (0x24, BIT, D::inst_bit, Zeropage,  3),  (0x25, AND, D::inst_and, Zeropage,        3),  (0x26, ROL, D::inst_rol, Zeropage,    5),  (0x27, RLA, D::inst_rla, Zeropage, 5),
-/*0x28*/ (0x28, PLP, D::inst_plp, Implied,   4),  (0x29, AND, D::inst_and, Immediate,       2),  (0x2A, ROL, D::inst_rol, Accumulator, 2),  (0x2B, ANC, D::inst_anc, Immediate, 2),
-/*0x2C*/ (0x2C, BIT, D::inst_bit, Absolute,  4),  (0x2D, AND, D::inst_and, Absolute,        4),  (0x2E, ROL, D::inst_rol, Absolute,    6),  (0x2F, RLA, D::inst_rla, Absolute, 6),
+/*0x24*/ (0x24, BIT, D::inst_bit, Zeropage,  3),  (0x25, AND, D::inst_and, Zeropage,        3),  (0x26, ROL, D::inst_rol, Zeropage,    5),  (0x27, RLA, D::inst_rla, Zeropage,        5),
+/*0x28*/ (0x28, PLP, D::inst_plp, Implied,   4),  (0x29, AND, D::inst_and, Immediate,       2),  (0x2A, ROL, D::inst_rol, Accumulator, 2),  (0x2B, ANC, D::inst_anc, Immediate,       2),
+/*0x2C*/ (0x2C, BIT, D::inst_bit, Absolute,  4),  (0x2D, AND, D::inst_and, Absolute,        4),  (0x2E, ROL, D::inst_rol, Absolute,    6),  (0x2F, RLA, D::inst_rla, Absolute,        6),
 /*0x30*/ (0x30, BMI, D::inst_bmi, Relative,  2),  (0x31, AND, D::inst_and, IndirectIndexed, 5),  (0x32, JAM, D::inst_jam, Implied,     0),  (0x33, RLA, D::inst_rla, IndirectIndexed, 8),
-/*0x34*/ (0x34, NOP2,D::inst_dop, ZeropageX, 4),  (0x35, AND, D::inst_and, ZeropageX,       4),  (0x36, ROL, D::inst_rol, ZeropageX,   6),  (0x37, RLA, D::inst_rla, ZeropageX, 6),
-/*0x38*/ (0x38, SEC, D::inst_sec, Implied,   2),  (0x39, AND, D::inst_and, AbsoluteY,       4),  (0x3A, NOP, undef,       Implied,     1),  (0x3B, RLA, D::inst_rla, AbsoluteY, 7),
-/*0x3C*/ (0x3C, NOP, undef,       Implied,   1),  (0x3D, AND, D::inst_and, AbsoluteX,       4),  (0x3E, ROL, D::inst_rol, AbsoluteX,   7),  (0x3F, RLA, D::inst_rla, AbsoluteX, 7),
+/*0x34*/ (0x34, NOP2,D::inst_dop, ZeropageX, 4),  (0x35, AND, D::inst_and, ZeropageX,       4),  (0x36, ROL, D::inst_rol, ZeropageX,   6),  (0x37, RLA, D::inst_rla, ZeropageX,       6),
+/*0x38*/ (0x38, SEC, D::inst_sec, Implied,   2),  (0x39, AND, D::inst_and, AbsoluteY,       4),  (0x3A, NOP3,D::inst_nop3,Implied,     2),  (0x3B, RLA, D::inst_rla, AbsoluteY,       7),
+/*0x3C*/ (0x3C, NOP4,D::inst_top, AbsoluteX, 4),  (0x3D, AND, D::inst_and, AbsoluteX,       4),  (0x3E, ROL, D::inst_rol, AbsoluteX,   7),  (0x3F, RLA, D::inst_rla, AbsoluteX,       7),
 /*0x40*/ (0x40, RTI, D::inst_rti, Implied,   6),  (0x41, EOR, D::inst_eor, IndexedIndirect, 6),  (0x42, JAM, D::inst_jam, Implied,     0),  (0x43, SRE, D::inst_sre, IndexedIndirect, 8),
-/*0x44*/ (0x44, NOP2,D::inst_dop, Zeropage,  3),  (0x45, EOR, D::inst_eor, Zeropage,        3),  (0x46, LSR, D::inst_lsr, Zeropage,    5),  (0x47, SRE, D::inst_sre, Zeropage, 5),
-/*0x48*/ (0x48, PHA, D::inst_pha, Implied,   3),  (0x49, EOR, D::inst_eor, Immediate,       2),  (0x4A, LSR, D::inst_lsr, Accumulator, 2),  (0x4B, ASR, D::inst_asr, Immediate, 2),
-/*0x4C*/ (0x4C, JMP, D::inst_jmp, Absolute,  3),  (0x4D, EOR, D::inst_eor, Absolute,        4),  (0x4E, LSR, D::inst_lsr, Absolute,    6),  (0x4F, SRE, D::inst_sre, Absolute, 6),
+/*0x44*/ (0x44, NOP2,D::inst_dop, Zeropage,  3),  (0x45, EOR, D::inst_eor, Zeropage,        3),  (0x46, LSR, D::inst_lsr, Zeropage,    5),  (0x47, SRE, D::inst_sre, Zeropage,        5),
+/*0x48*/ (0x48, PHA, D::inst_pha, Implied,   3),  (0x49, EOR, D::inst_eor, Immediate,       2),  (0x4A, LSR, D::inst_lsr, Accumulator, 2),  (0x4B, ASR, D::inst_asr, Immediate,       2),
+/*0x4C*/ (0x4C, JMP, D::inst_jmp, Absolute,  3),  (0x4D, EOR, D::inst_eor, Absolute,        4),  (0x4E, LSR, D::inst_lsr, Absolute,    6),  (0x4F, SRE, D::inst_sre, Absolute,        6),
 /*0x50*/ (0x50, BVC, D::inst_bvc, Relative,  2),  (0x51, EOR, D::inst_eor, IndirectIndexed, 5),  (0x52, JAM, D::inst_jam, Implied,     0),  (0x53, SRE, D::inst_sre, IndirectIndexed, 8),
-/*0x54*/ (0x54, NOP2,D::inst_dop, ZeropageX, 4),  (0x55, EOR, D::inst_eor, ZeropageX,       4),  (0x56, LSR, D::inst_lsr, ZeropageX,   6),  (0x57, SRE, D::inst_sre, ZeropageX, 6),
-/*0x58*/ (0x58, CLI, D::inst_cli, Implied,   2),  (0x59, EOR, D::inst_eor, AbsoluteY,       4),  (0x5A, NOP, undef,       Implied,     1),  (0x5B, SRE, D::inst_sre, AbsoluteY, 7),
-/*0x5C*/ (0x5C, NOP, undef,       Implied,   1),  (0x5D, EOR, D::inst_eor, AbsoluteX,       4),  (0x5E, LSR, D::inst_lsr, AbsoluteX,   7),  (0x5F, SRE, D::inst_sre, AbsoluteX, 7),
+/*0x54*/ (0x54, NOP2,D::inst_dop, ZeropageX, 4),  (0x55, EOR, D::inst_eor, ZeropageX,       4),  (0x56, LSR, D::inst_lsr, ZeropageX,   6),  (0x57, SRE, D::inst_sre, ZeropageX,       6),
+/*0x58*/ (0x58, CLI, D::inst_cli, Implied,   2),  (0x59, EOR, D::inst_eor, AbsoluteY,       4),  (0x5A, NOP3,D::inst_nop3,Implied,     2),  (0x5B, SRE, D::inst_sre, AbsoluteY,       7),
+/*0x5C*/ (0x5C, NOP4,D::inst_top, AbsoluteX, 4),  (0x5D, EOR, D::inst_eor, AbsoluteX,       4),  (0x5E, LSR, D::inst_lsr, AbsoluteX,   7),  (0x5F, SRE, D::inst_sre, AbsoluteX,       7),
 /*0x60*/ (0x60, RTS, D::inst_rts, Implied,   6),  (0x61, ADC, D::inst_adc, IndexedIndirect, 6),  (0x62, JAM, D::inst_jam, Implied,     0),  (0x63, RRA, D::inst_rra, IndexedIndirect, 8),
-/*0x64*/ (0x64, NOP2,D::inst_dop, Zeropage,  3),  (0x65, ADC, D::inst_adc, Zeropage,        3),  (0x66, ROR, D::inst_ror, Zeropage,    5),  (0x67, RRA, D::inst_rra, Zeropage, 5),
-/*0x68*/ (0x68, PLA, D::inst_pla, Implied,   4),  (0x69, ADC, D::inst_adc, Immediate,       2),  (0x6A, ROR, D::inst_ror, Accumulator, 2),  (0x6B, ARR, D::inst_arr, Immediate, 2),
-/*0x6C*/ (0x6C, JMP, D::inst_jmp, Indirect,  5),  (0x6D, ADC, D::inst_adc, Absolute,        4),  (0x6E, ROR, D::inst_ror, Absolute,    6),  (0x6F, RRA, D::inst_rra, Absolute, 6),
+/*0x64*/ (0x64, NOP2,D::inst_dop, Zeropage,  3),  (0x65, ADC, D::inst_adc, Zeropage,        3),  (0x66, ROR, D::inst_ror, Zeropage,    5),  (0x67, RRA, D::inst_rra, Zeropage,        5),
+/*0x68*/ (0x68, PLA, D::inst_pla, Implied,   4),  (0x69, ADC, D::inst_adc, Immediate,       2),  (0x6A, ROR, D::inst_ror, Accumulator, 2),  (0x6B, ARR, D::inst_arr, Immediate,       2),
+/*0x6C*/ (0x6C, JMP, D::inst_jmp, Indirect,  5),  (0x6D, ADC, D::inst_adc, Absolute,        4),  (0x6E, ROR, D::inst_ror, Absolute,    6),  (0x6F, RRA, D::inst_rra, Absolute,        6),
 /*0x70*/ (0x70, BVS, D::inst_bvs, Relative,  2),  (0x71, ADC, D::inst_adc, IndirectIndexed, 5),  (0x72, JAM, D::inst_jam, Implied,     0),  (0x73, RRA, D::inst_rra, IndirectIndexed, 8),
-/*0x74*/ (0x74, NOP2,D::inst_dop, ZeropageX, 4),  (0x75, ADC, D::inst_adc, ZeropageX,       4),  (0x76, ROR, D::inst_ror, ZeropageX,   6),  (0x77, RRA, D::inst_rra, AbsoluteX, 6),
-/*0x78*/ (0x78, SEI, D::inst_sei, Implied,   2),  (0x79, ADC, D::inst_adc, AbsoluteY,       4),  (0x7A, NOP, undef,       Implied,     1),  (0x7B, RRA, D::inst_rra, AbsoluteY, 7),
-/*0x7C*/ (0x7C, NOP, undef,       Implied,   1),  (0x7D, ADC, D::inst_adc, AbsoluteX,       4),  (0x7E, ROR, D::inst_ror, AbsoluteX,   7),  (0x7F, RRA, D::inst_rra, AbsoluteX, 7),
+/*0x74*/ (0x74, NOP2,D::inst_dop, ZeropageX, 4),  (0x75, ADC, D::inst_adc, ZeropageX,       4),  (0x76, ROR, D::inst_ror, ZeropageX,   6),  (0x77, RRA, D::inst_rra, ZeropageX,       6),
+/*0x78*/ (0x78, SEI, D::inst_sei, Implied,   2),  (0x79, ADC, D::inst_adc, AbsoluteY,       4),  (0x7A, NOP3,D::inst_nop3,Implied,     2),  (0x7B, RRA, D::inst_rra, AbsoluteY,       7),
+/*0x7C*/ (0x7C, NOP4,D::inst_top, AbsoluteX, 4),  (0x7D, ADC, D::inst_adc, AbsoluteX,       4),  (0x7E, ROR, D::inst_ror, AbsoluteX,   7),  (0x7F, RRA, D::inst_rra, AbsoluteX,       7),
 /*0x80*/ (0x80, NOP2,D::inst_dop, Immediate, 2),  (0x81, STA, D::inst_sta, IndexedIndirect, 6),  (0x82, NOP2,D::inst_dop, Immediate,   2),  (0x83, SAX, D::inst_sax, IndexedIndirect, 6),
-/*0x84*/ (0x84, STY, D::inst_sty, Zeropage,  3),  (0x85, STA, D::inst_sta, Zeropage,        3),  (0x86, STX, D::inst_stx, Zeropage,    3),  (0x87, SAX, D::inst_sax, Zeropage, 3),
-/*0x88*/ (0x88, DEY, D::inst_dey, Implied,   2),  (0x89, NOP2,D::inst_dop, Immediate,       2),  (0x8A, TXA, D::inst_txa, Implied,     2),  (0x8B, NOP, undef, Implied, 1),
-/*0x8C*/ (0x8C, STY, D::inst_sty, Absolute,  4),  (0x8D, STA, D::inst_sta, Absolute,        4),  (0x8E, STX, D::inst_stx, Absolute,    4),  (0x8F, SAX, D::inst_sax, Absolute, 4),
+/*0x84*/ (0x84, STY, D::inst_sty, Zeropage,  3),  (0x85, STA, D::inst_sta, Zeropage,        3),  (0x86, STX, D::inst_stx, Zeropage,    3),  (0x87, SAX, D::inst_sax, Zeropage,        3),
+/*0x88*/ (0x88, DEY, D::inst_dey, Implied,   2),  (0x89, NOP2,D::inst_dop, Immediate,       2),  (0x8A, TXA, D::inst_txa, Implied,     2),  (0x8B, ANE, D::inst_ane, Immediate,       2),
+/*0x8C*/ (0x8C, STY, D::inst_sty, Absolute,  4),  (0x8D, STA, D::inst_sta, Absolute,        4),  (0x8E, STX, D::inst_stx, Absolute,    4),  (0x8F, SAX, D::inst_sax, Absolute,        4),
 /*0x90*/ (0x90, BCC, D::inst_bcc, Relative,  2),  (0x91, STA, D::inst_sta, IndirectIndexed, 6),  (0x92, JAM, D::inst_jam, Implied,     0),  (0x93, SHA, D::inst_sha, IndirectIndexed, 6),
-/*0x94*/ (0x94, STY, D::inst_sty, ZeropageX, 4),  (0x95, STA, D::inst_sta, ZeropageX,       4),  (0x96, STX, D::inst_stx, ZeropageY,   4),  (0x97, SAX, D::inst_sax, ZeropageY, 4),
-/*0x98*/ (0x98, TYA, D::inst_tya, Implied,   2),  (0x99, STA, D::inst_sta, AbsoluteY,       5),  (0x9A, TXS, D::inst_txs, Implied,     2),  (0x9B, NOP, undef, Implied, 1),
-/*0x9C*/ (0x9C, NOP, undef,       Implied,   1),  (0x9D, STA, D::inst_sta, AbsoluteX,       5),  (0x9E, NOP, undef,       Implied,     1),  (0x9F, SHA, D::inst_sha, AbsoluteY, 5),
+/*0x94*/ (0x94, STY, D::inst_sty, ZeropageX, 4),  (0x95, STA, D::inst_sta, ZeropageX,       4),  (0x96, STX, D::inst_stx, ZeropageY,   4),  (0x97, SAX, D::inst_sax, ZeropageY,       4),
+/*0x98*/ (0x98, TYA, D::inst_tya, Implied,   2),  (0x99, STA, D::inst_sta, AbsoluteY,       5),  (0x9A, TXS, D::inst_txs, Implied,     2),  (0x9B, SHS, D::inst_shs, AbsoluteY,       5),
+/*0x9C*/ (0x9C, SHY, D::inst_shy, AbsoluteX, 5),  (0x9D, STA, D::inst_sta, AbsoluteX,       5),  (0x9E, SHX, D::inst_shx, AbsoluteY,   5),  (0x9F, SHA, D::inst_sha, AbsoluteY,       5),
 /*0xA0*/ (0xA0, LDY, D::inst_ldy, Immediate, 2),  (0xA1, LDA, D::inst_lda, IndexedIndirect, 6),  (0xA2, LDX, D::inst_ldx, Immediate,   2),  (0xA3, LAX, D::inst_lax, IndexedIndirect, 6),
-/*0xA4*/ (0xA4, LDY, D::inst_ldy, Zeropage,  3),  (0xA5, LDA, D::inst_lda, Zeropage,        3),  (0xA6, LDX, D::inst_ldx, Zeropage,    3),  (0xA7, LAX, D::inst_lax, Zeropage, 3),
-/*0xA8*/ (0xA8, TAY, D::inst_tay, Implied,   2),  (0xA9, LDA, D::inst_lda, Immediate,       2),  (0xAA, TAX, D::inst_tax, Implied,     2),  (0xAB, LXA, D::inst_lxa, Immediate, 2),
-/*0xAC*/ (0xAC, LDY, D::inst_ldy, Absolute,  4),  (0xAD, LDA, D::inst_lda, Absolute,        4),  (0xAE, LDX, D::inst_ldx, Absolute,    4),  (0xAF, LAX, D::inst_lax, Absolute, 4),
+/*0xA4*/ (0xA4, LDY, D::inst_ldy, Zeropage,  3),  (0xA5, LDA, D::inst_lda, Zeropage,        3),  (0xA6, LDX, D::inst_ldx, Zeropage,    3),  (0xA7, LAX, D::inst_lax, Zeropage,        3),
+/*0xA8*/ (0xA8, TAY, D::inst_tay, Implied,   2),  (0xA9, LDA, D::inst_lda, Immediate,       2),  (0xAA, TAX, D::inst_tax, Implied,     2),  (0xAB, LXA, D::inst_lxa, Immediate,       2),
+/*0xAC*/ (0xAC, LDY, D::inst_ldy, Absolute,  4),  (0xAD, LDA, D::inst_lda, Absolute,        4),  (0xAE, LDX, D::inst_ldx, Absolute,    4),  (0xAF, LAX, D::inst_lax, Absolute,        4),
 /*0xB0*/ (0xB0, BCS, D::inst_bcs, Relative,  2),  (0xB1, LDA, D::inst_lda, IndirectIndexed, 5),  (0xB2, JAM, D::inst_jam, Implied,     0),  (0xB3, LAX, D::inst_lax, IndirectIndexed, 5),
-/*0xB4*/ (0xB4, LDY, D::inst_ldy, ZeropageX, 4),  (0xB5, LDA, D::inst_lda, ZeropageX,       4),  (0xB6, LDX, D::inst_ldx, ZeropageY,   4),  (0xB7, LAX, D::inst_lax, ZeropageY, 4),
-/*0xB8*/ (0xB8, CLV, D::inst_clv, Implied,   2),  (0xB9, LDA, D::inst_lda, AbsoluteY,       4),  (0xBA, TSX, D::inst_tsx, Implied,     2),  (0xBB, LAE, D::inst_lae, AbsoluteY, 4),
-/*0xBC*/ (0xBC, LDY, D::inst_ldy, AbsoluteX, 4),  (0xBD, LDA, D::inst_lda, AbsoluteX,       4),  (0xBE, LDX, D::inst_ldx, AbsoluteY,   4),  (0xBF, LAX, D::inst_lax, AbsoluteY, 4),
+/*0xB4*/ (0xB4, LDY, D::inst_ldy, ZeropageX, 4),  (0xB5, LDA, D::inst_lda, ZeropageX,       4),  (0xB6, LDX, D::inst_ldx, ZeropageY,   4),  (0xB7, LAX, D::inst_lax, ZeropageY,       4),
+/*0xB8*/ (0xB8, CLV, D::inst_clv, Implied,   2),  (0xB9, LDA, D::inst_lda, AbsoluteY,       4),  (0xBA, TSX, D::inst_tsx, Implied,     2),  (0xBB, LAE, D::inst_lae, AbsoluteY,       4),
+/*0xBC*/ (0xBC, LDY, D::inst_ldy, AbsoluteX, 4),  (0xBD, LDA, D::inst_lda, AbsoluteX,       4),  (0xBE, LDX, D::inst_ldx, AbsoluteY,   4),  (0xBF, LAX, D::inst_lax, AbsoluteY,       4),
 /*0xC0*/ (0xC0, CPY, D::inst_cpy, Immediate, 2),  (0xC1, CMP, D::inst_cmp, IndexedIndirect, 6),  (0xC2, NOP2,D::inst_dop, Immediate,   2),  (0xC3, DCP, D::inst_dcp, IndexedIndirect, 8),
-/*0xC4*/ (0xC4, CPY, D::inst_cpy, Zeropage,  3),  (0xC5, CMP, D::inst_cmp, Zeropage,        3),  (0xC6, DEC, D::inst_dec, Zeropage,    5),  (0xC7, DCP, D::inst_dcp, Zeropage, 5),
-/*0xC8*/ (0xC8, INY, D::inst_iny, Implied,   2),  (0xC9, CMP, D::inst_cmp, Immediate,       2),  (0xCA, DEX, D::inst_dex, Implied,     2),  (0xCB, SBX, D::inst_sbx, Immediate, 2),
-/*0xCC*/ (0xCC, CPY, D::inst_cpy, Absolute,  4),  (0xCD, CMP, D::inst_cmp, Absolute,        4),  (0xCE, DEC, D::inst_dec, Absolute,    6),  (0xCF, DCP, D::inst_dcp, Absolute, 6),
+/*0xC4*/ (0xC4, CPY, D::inst_cpy, Zeropage,  3),  (0xC5, CMP, D::inst_cmp, Zeropage,        3),  (0xC6, DEC, D::inst_dec, Zeropage,    5),  (0xC7, DCP, D::inst_dcp, Zeropage,        5),
+/*0xC8*/ (0xC8, INY, D::inst_iny, Implied,   2),  (0xC9, CMP, D::inst_cmp, Immediate,       2),  (0xCA, DEX, D::inst_dex, Implied,     2),  (0xCB, SBX, D::inst_sbx, Immediate,       2),
+/*0xCC*/ (0xCC, CPY, D::inst_cpy, Absolute,  4),  (0xCD, CMP, D::inst_cmp, Absolute,        4),  (0xCE, DEC, D::inst_dec, Absolute,    6),  (0xCF, DCP, D::inst_dcp, Absolute,        6),
 /*0xD0*/ (0xD0, BNE, D::inst_bne, Relative,  2),  (0xD1, CMP, D::inst_cmp, IndirectIndexed, 5),  (0xD2, JAM, D::inst_jam, Implied,     0),  (0xD3, DCP, D::inst_dcp, IndirectIndexed, 8),
-/*0xD4*/ (0xD4, NOP2,D::inst_dop, ZeropageX, 4),  (0xD5, CMP, D::inst_cmp, ZeropageX,       4),  (0xD6, DEC, D::inst_dec, ZeropageX,   6),  (0xD7, DCP, D::inst_dcp, ZeropageX, 6),
-/*0xD8*/ (0xD8, CLD, D::inst_cld, Implied,   2),  (0xD9, CMP, D::inst_cmp, AbsoluteY,       4),  (0xDA, NOP, undef,       Implied,     1),  (0xDB, DCP, D::inst_dcp, AbsoluteY, 7),
-/*0xDC*/ (0xDC, NOP, undef,       Implied,   1),  (0xDD, CMP, D::inst_cmp, AbsoluteX,       4),  (0xDE, DEC, D::inst_dec, AbsoluteX,   7),  (0xDF, DCP, D::inst_dcp, AbsoluteX, 7),
+/*0xD4*/ (0xD4, NOP2,D::inst_dop, ZeropageX, 4),  (0xD5, CMP, D::inst_cmp, ZeropageX,       4),  (0xD6, DEC, D::inst_dec, ZeropageX,   6),  (0xD7, DCP, D::inst_dcp, ZeropageX,       6),
+/*0xD8*/ (0xD8, CLD, D::inst_cld, Implied,   2),  (0xD9, CMP, D::inst_cmp, AbsoluteY,       4),  (0xDA, NOP3,D::inst_nop3,Implied,     2),  (0xDB, DCP, D::inst_dcp, AbsoluteY,       7),
+/*0xDC*/ (0xDC, NOP4,D::inst_top, AbsoluteX, 4),  (0xDD, CMP, D::inst_cmp, AbsoluteX,       4),  (0xDE, DEC, D::inst_dec, AbsoluteX,   7),  (0xDF, DCP, D::inst_dcp, AbsoluteX,       7),
 /*0xE0*/ (0xE0, CPX, D::inst_cpx, Immediate, 2),  (0xE1, SBC, D::inst_sbc, IndexedIndirect, 6),  (0xE2, NOP2,D::inst_dop, Immediate,   2),  (0xE3, ISB, D::inst_isb, IndexedIndirect, 8),
-/*0xE4*/ (0xE4, CPX, D::inst_cpx, Zeropage,  3),  (0xE5, SBC, D::inst_sbc, Zeropage,        3),  (0xE6, INC, D::inst_inc, Zeropage,    5),  (0xE7, ISB, D::inst_isb, Zeropage, 5),
-/*0xE8*/ (0xE8, INX, D::inst_inx, Implied,   2),  (0xE9, SBC, D::inst_sbc, Immediate,       2),  (0xEA, NOP, D::inst_nop, Implied,     2),  (0xEB, NOP, undef, Implied, 1),
-/*0xEC*/ (0xEC, CPX, D::inst_cpx, Absolute,  4),  (0xED, SBC, D::inst_sbc, Absolute,        4),  (0xEE, INC, D::inst_inc, Absolute,    6),  (0xEF, ISB, D::inst_isb, Absolute, 6),
+/*0xE4*/ (0xE4, CPX, D::inst_cpx, Zeropage,  3),  (0xE5, SBC, D::inst_sbc, Zeropage,        3),  (0xE6, INC, D::inst_inc, Zeropage,    5),  (0xE7, ISB, D::inst_isb, Zeropage,        5),
+/*0xE8*/ (0xE8, INX, D::inst_inx, Implied,   2),  (0xE9, SBC, D::inst_sbc, Immediate,       2),  (0xEA, NOP, D::inst_nop, Implied,     2),  (0xEB, SBC2,D::inst_sbc2,Immediate,       2),
+/*0xEC*/ (0xEC, CPX, D::inst_cpx, Absolute,  4),  (0xED, SBC, D::inst_sbc, Absolute,        4),  (0xEE, INC, D::inst_inc, Absolute,    6),  (0xEF, ISB, D::inst_isb, Absolute,        6),
 /*0xF0*/ (0xF0, BEQ, D::inst_beq, Relative,  2),  (0xF1, SBC, D::inst_sbc, IndirectIndexed, 5),  (0xF2, JAM, D::inst_jam, Implied,     0),  (0xF3, ISB, D::inst_isb, IndirectIndexed, 8),
-/*0xF4*/ (0xF4, NOP2,D::inst_dop, ZeropageX, 4),  (0xF5, SBC, D::inst_sbc, ZeropageX,       4),  (0xF6, INC, D::inst_inc, ZeropageX,   6),  (0xF7, ISB, D::inst_isb, ZeropageX, 6),
-/*0xF8*/ (0xF8, SED, D::inst_sed, Implied,   2),  (0xF9, SBC, D::inst_sbc, AbsoluteY,       4),  (0xFA, NOP, undef,       Implied,     1),  (0xFB, ISB, D::inst_isb, AbsoluteY, 7),
-/*0xFC*/ (0xFC, NOP, undef,       Implied,   1),  (0xFD, SBC, D::inst_sbc, AbsoluteX,       4),  (0xFE, INC, D::inst_inc, AbsoluteX,   7),  (0xFF, ISB, D::inst_isb, AbsoluteX, 7),
+/*0xF4*/ (0xF4, NOP2,D::inst_dop, ZeropageX, 4),  (0xF5, SBC, D::inst_sbc, ZeropageX,       4),  (0xF6, INC, D::inst_inc, ZeropageX,   6),  (0xF7, ISB, D::inst_isb, ZeropageX,       6),
+/*0xF8*/ (0xF8, SED, D::inst_sed, Implied,   2),  (0xF9, SBC, D::inst_sbc, AbsoluteY,       4),  (0xFA, NOP3,D::inst_nop3,Implied,     2),  (0xFB, ISB, D::inst_isb, AbsoluteY,       7),
+/*0xFC*/ (0xFC, NOP4,D::inst_top, AbsoluteX, 4),  (0xFD, SBC, D::inst_sbc, AbsoluteX,       4),  (0xFE, INC, D::inst_inc, AbsoluteX,   7),  (0xFF, ISB, D::inst_isb, AbsoluteX,       7),
     ]
 };
 
@@ -121,7 +121,7 @@ impl Device {
         }
     }
 
-    pub fn result_extra_cycles(&self, cycles: u8) -> InstResult {
+    fn result_extra_cycles(&self, cycles: u8) -> InstResult {
         Ok(InstructionMetadata {
             cycles,
             update_pc: self.cpu.pc,
@@ -129,7 +129,7 @@ impl Device {
         })
     }
 
-    pub fn result_simple(&self) -> InstResult {
+    fn result_simple(&self) -> InstResult {
         Ok(InstructionMetadata {
             cycles: 0,
             update_pc: self.cpu.pc,
@@ -137,7 +137,7 @@ impl Device {
         })
     }
 
-    pub fn result_pc(&self, update_pc: u16) -> InstResult {
+    fn result_pc(&self, update_pc: u16) -> InstResult {
         Ok(InstructionMetadata {
             cycles: 0,
             update_pc,
@@ -145,7 +145,7 @@ impl Device {
         })
     }
 
-    pub fn result_skip(&self, skip_n: u16) -> InstResult {
+    fn result_skip(&self, skip_n: u16) -> InstResult {
         let update_pc = self
             .cpu
             .pc
@@ -158,7 +158,7 @@ impl Device {
         })
     }
 
-    pub fn result_stop(&self) -> InstResult {
+    fn result_stop(&self) -> InstResult {
         Ok(InstructionMetadata {
             cycles: 0,
             update_pc: self.cpu.pc,
@@ -803,14 +803,14 @@ impl Device {
 
     /// NOP3
     fn inst_nop3(&mut self, mode: AddressingMode) -> InstResult {
+        expect_mode(mode, AddressingMode::Implied)?;
         self.result_simple()
     }
 
     /// RLA
     fn inst_rla(&mut self, mode: AddressingMode) -> InstResult {
         let _ = self.inst_rol(mode)?;
-        let _ = self.inst_and(mode)?;
-        self.result_simple()
+        self.inst_and(mode)
     }
 
     /// RRA
@@ -821,7 +821,8 @@ impl Device {
 
     /// SBC2
     fn inst_sbc2(&mut self, mode: AddressingMode) -> InstResult {
-        self.result_simple()
+        expect_mode(mode, AddressingMode::Immediate)?;
+        self.inst_sbc(mode)
     }
 
     /// SLO
@@ -838,27 +839,40 @@ impl Device {
 
     /// SHX
     fn inst_shx(&mut self, mode: AddressingMode) -> InstResult {
-        self.result_simple()
+        let param_addr = self.fetch_param_addr(mode)?;
+        let val = self.cpu.reg_x & ((param_addr.addr >> 8) as u8).wrapping_add(1);
+        self.write_one(param_addr.addr, val.wrapping_add(1))?;
+        self.result_pc(param_addr.pc_upd)
     }
 
     /// SHY
     fn inst_shy(&mut self, mode: AddressingMode) -> InstResult {
-        self.result_simple()
+        let param_addr = self.fetch_param_addr(mode)?;
+        let val = self.cpu.reg_y & ((param_addr.addr >> 8) as u8).wrapping_add(1);
+        self.write_one(param_addr.addr, val)?;
+        self.result_pc(param_addr.pc_upd)
     }
 
     /// TOP (NOP4)
     fn inst_top(&mut self, mode: AddressingMode) -> InstResult {
-        self.result_simple()
+        let param_addr = self.fetch_param_addr(mode)?;
+        self.result_pc(param_addr.pc_upd)
     }
 
     /// ANE
     fn inst_ane(&mut self, mode: AddressingMode) -> InstResult {
-        self.result_simple()
+        self.inst_tax(AddressingMode::Implied)?;
+        self.inst_and(mode)
     }
 
     /// SHS
     fn inst_shs(&mut self, mode: AddressingMode) -> InstResult {
-        self.result_simple()
+        let tmp = self.cpu.reg_x & self.cpu.reg_x;
+        self.cpu.sp = tmp;
+        let param_addr = self.fetch_param_addr(mode)?;
+        let val = tmp & ((param_addr.addr >> 8) as u8).wrapping_add(1);
+        self.write_one(param_addr.addr, val)?;
+        self.result_pc(param_addr.pc_upd)
     }
 }
 
