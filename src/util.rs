@@ -22,6 +22,12 @@ pub enum NesError {
     Unimplemented,
     /// Attempting to write in rom section
     RomWriteAttempt,
+    /// Attempting to write in ppu read-only memory
+    PpuWriteForbidden,
+    /// Attempting tot read from ppu write-only memory
+    PpuReadForbidden,
+    /// PPU Address out of valid range
+    PpuAddressViolation,
 }
 
 pub struct InstructionMetadata {

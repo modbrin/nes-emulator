@@ -1,6 +1,6 @@
 //! This module contians logic for memory handling, namely ram and vram
 
-use crate::prelude::*;
+use crate::{ppu::Ppu, prelude::*};
 
 /// Memory Operations
 impl Device {
@@ -139,14 +139,16 @@ impl RwMemory for Device {
 #[derive(Debug)]
 pub struct Bus {
     pub ram: [u8; RAM_SIZE],
-    pub rom: Rom,
+    pub prg: Vec<u8>,
+    pub ppu: Ppu,
 }
 
 impl Bus {
     pub fn with_rom(rom: Rom) -> Self {
         Self {
             ram: [0; RAM_SIZE],
-            rom,
+            prg: rom.prg_data,
+            ppu: Ppu::new(rom.chr_data, rom.scr_mirroring),
         }
     }
 }
@@ -158,17 +160,13 @@ impl RwMemory for Bus {
                 let mapped_addr = addr & CPU_MIRROR_MASK;
                 Ok(self.ram[mapped_addr as usize])
             }
-            PPU_MMAP_RNG_START..=PPU_MMAP_RNG_END => {
-                let mapped_addr = addr & PPU_MIRROR_MASK;
-                // todo!()
-                Ok(0)
-            }
+            PPU_MMAP_RNG_START..=PPU_MMAP_RNG_END => self.ppu.read_one(addr),
             ROM_SECTION_START..=ROM_SECTION_END => {
                 let mut prg_offset = (addr - ROM_SECTION_START) as usize;
-                if self.rom.prg_data.len() == SIZE_16KB && prg_offset >= SIZE_16KB {
+                if self.prg.len() == SIZE_16KB && prg_offset >= SIZE_16KB {
                     prg_offset %= SIZE_16KB;
                 }
-                Ok(self.rom.prg_data[prg_offset])
+                Ok(self.prg[prg_offset])
             }
             _ => {
                 println!("WARN: Reading memory outside mapped bus range: {addr}");
@@ -184,8 +182,7 @@ impl RwMemory for Bus {
                 self.ram[mapped_addr as usize] = val;
             }
             PPU_MMAP_RNG_START..=PPU_MMAP_RNG_END => {
-                let mapped_addr = addr & PPU_MIRROR_MASK;
-                todo!()
+                self.ppu.write_one(addr, val)?;
             }
             ROM_SECTION_START..=ROM_SECTION_END => {
                 return Err(NesError::RomWriteAttempt);

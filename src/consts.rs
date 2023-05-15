@@ -16,6 +16,8 @@ pub const ROM_SECTION_START: u16 = 0x8000;
 pub const ROM_SECTION_END: u16 = 0xFFFF;
 /// memory location where startup value for program counter is stored
 pub const PC_RESET_ADDR: u16 = 0xFFFC;
+/// 16 kb in bytes
+pub const SIZE_16KB: usize = 0x4000;
 
 pub const BIT0: u8 = 1 << 0;
 pub const BIT1: u8 = 1 << 1;
@@ -37,8 +39,14 @@ pub const NES_TAG: &[u8] = &[0x4E, 0x45, 0x53, 0x1A];
 pub const PRG_BANK_SIZE: usize = 16 * 1024; // 16 kB
 pub const CHR_BANK_SIZE: usize = 8 * 1024; // 8 kB
 pub const ROM_TRAINER_SIZE: usize = 512; // 512 bytes
+pub const PALETTE_COLORS: usize = 32;
 
-pub const SIZE_16KB: usize = 0x4000;
+pub const PPU_CHR_START: u16 = 0x0000;
+pub const PPU_CHR_END: u16 = 0x1FFF;
+pub const PPU_RAM_START: u16 = 0x2000;
+pub const PPU_RAM_END: u16 = 0x2FFF;
+pub const PPU_PALETTE_START: u16 = 0x3f00;
+pub const PPU_PALETTE_END: u16 = 0x3fff;
 
 #[rustfmt::skip]
 #[derive(Clone, Copy)]
@@ -105,4 +113,43 @@ pub enum AddressingMode {
     IndexedIndirect,
     /// (d),y
     IndirectIndexed,
+}
+
+/// Screen mirroring
+#[derive(Debug)]
+pub enum ScrMirror {
+    Vertical,
+    Horizontal,
+    Single,
+    FourScreen,
+}
+
+#[rustfmt::skip]
+#[derive(Clone, Copy)]
+#[repr(u8)]
+pub enum ControlRegType {
+    /// Base nametable address (low byte)
+    /// `(0 = $2000; 1 = $2400; 2 = $2800; 3 = $2C00)`
+    NametableLo       = BIT0,
+    /// Base nametable address (high byte)
+    /// `(0 = $2000; 1 = $2400; 2 = $2800; 3 = $2C00)`
+    NametableHi       = BIT1,
+    /// VRAM address increment per CPU read/write of PPUDATA
+    /// `(0: add 1, going across; 1: add 32, going down)`
+    VramAddrInc       = BIT2,
+    /// Sprite pattern table address for 8x8 sprites
+    /// `(0: $0000; 1: $1000; ignored in 8x16 mode)`
+    SpritePatternAddr = BIT3,
+    /// Background pattern table address
+    /// `(0: $0000; 1: $1000)`
+    BgdPatternAddr    = BIT4,
+    /// Sprite size
+    /// `(0: 8x8 pixels; 1: 8x16 pixels)`
+    SpriteSize        = BIT5,
+    /// PPU master/slave select
+    /// `(0: read backdrop from EXT pins; 1: output color on EXT pins)`
+    MasterSlave       = BIT6,
+    /// Generate an NMI at the start of the vertical blanking interval
+    /// `(0: off; 1: on)`
+    GenNmi            = BIT7,
 }

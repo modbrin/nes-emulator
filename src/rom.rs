@@ -11,14 +11,6 @@ pub struct Rom {
     pub scr_mirroring: ScrMirror,
 }
 
-/// Screen mirroring
-#[derive(Debug)]
-pub enum ScrMirror {
-    Vertical,
-    Horizontal,
-    FourScreen,
-}
-
 impl Rom {
     pub fn parse(data: impl AsRef<[u8]>) -> Result<Rom, &'static str> {
         let data = data.as_ref();
