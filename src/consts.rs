@@ -123,33 +123,3 @@ pub enum ScrMirror {
     Single,
     FourScreen,
 }
-
-#[rustfmt::skip]
-#[derive(Clone, Copy)]
-#[repr(u8)]
-pub enum ControlRegType {
-    /// Base nametable address (low byte)
-    /// `(0 = $2000; 1 = $2400; 2 = $2800; 3 = $2C00)`
-    NametableLo       = BIT0,
-    /// Base nametable address (high byte)
-    /// `(0 = $2000; 1 = $2400; 2 = $2800; 3 = $2C00)`
-    NametableHi       = BIT1,
-    /// VRAM address increment per CPU read/write of PPUDATA
-    /// `(0: add 1, going across; 1: add 32, going down)`
-    VramAddrInc       = BIT2,
-    /// Sprite pattern table address for 8x8 sprites
-    /// `(0: $0000; 1: $1000; ignored in 8x16 mode)`
-    SpritePatternAddr = BIT3,
-    /// Background pattern table address
-    /// `(0: $0000; 1: $1000)`
-    BgdPatternAddr    = BIT4,
-    /// Sprite size
-    /// `(0: 8x8 pixels; 1: 8x16 pixels)`
-    SpriteSize        = BIT5,
-    /// PPU master/slave select
-    /// `(0: read backdrop from EXT pins; 1: output color on EXT pins)`
-    MasterSlave       = BIT6,
-    /// Generate an NMI at the start of the vertical blanking interval
-    /// `(0: off; 1: on)`
-    GenNmi            = BIT7,
-}
