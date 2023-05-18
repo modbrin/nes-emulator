@@ -15,9 +15,9 @@ pub struct Ppu {
 
     pub reg_addr: Cell<AddressReg>,
     pub reg_ctrl: ControlReg,
-    pub reg_status: StatusReg,
+    pub reg_status: Cell<StatusReg>,
     pub reg_mask: MaskReg,
-    pub reg_scroll: ScrollReg,
+    pub reg_scroll: Cell<ScrollReg>,
     pub reg_oam_addr: u8,
 
     pub internal_buf: Cell<u8>,
@@ -33,9 +33,9 @@ impl Ppu {
             scr_mirroring,
             reg_addr: Cell::new(AddressReg::new()),
             reg_ctrl: ControlReg::new(),
-            reg_status: StatusReg::new(),
+            reg_status: Cell::new(StatusReg::new()),
             reg_mask: MaskReg::new(),
-            reg_scroll: ScrollReg::new(),
+            reg_scroll: Cell::new(ScrollReg::new()),
             reg_oam_addr: 0,
             internal_buf: Default::default(),
         }
@@ -70,8 +70,12 @@ impl AddressReg {
         self.reg = self.reg.wrapping_add(val as u16) & 0x3FFF;
     }
 
-    pub fn get(&self) -> u16 {
+    pub fn reg(&self) -> u16 {
         self.reg
+    }
+
+    pub fn reset_order(&mut self) {
+        self.is_hi = true;
     }
 }
 
@@ -156,12 +160,72 @@ impl MaskReg {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct StatusReg {}
+#[derive(Default, Debug, Clone, Copy)]
+pub struct StatusReg {
+    /// BIT5 - Sprite overflow. The intent was for this flag to be set
+    /// whenever more than eight sprites appear on a scanline, but a
+    /// hardware bug causes the actual behavior to be more complicated
+    /// and generate false positives as well as false negatives; see
+    /// PPU sprite evaluation. This flag is set during sprite
+    /// evaluation and cleared at dot 1 (the second dot) of the
+    /// pre-render line.
+    ///
+    /// BIT6 - Sprite 0 Hit.  Set when a nonzero pixel of sprite 0 overlaps
+    /// a nonzero background pixel; cleared at dot 1 of the pre-render
+    /// line.  Used for raster timing.
+    ///
+    /// BIT7 - Vertical blank has started (0: not in vblank; 1: in vblank).
+    /// Set at dot 1 of line 241 (the line *after* the post-render
+    /// line); cleared after reading $2002 and at dot 1 of the
+    /// pre-render line.
+    reg: u8,
+}
 
 impl StatusReg {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            ..Default::default()
+        }
+    }
+
+    pub fn push(&mut self, val: u8) {
+        self.reg = val;
+    }
+
+    pub fn reg(&self) -> u8 {
+        self.reg
+    }
+
+    pub fn get_sprite_overflow(&self) -> bool {
+        self.reg & BIT5 != 0
+    }
+
+    pub fn get_sprite_zero_hit(&self) -> bool {
+        self.reg & BIT6 != 0
+    }
+
+    pub fn get_vblank_started(&self) -> bool {
+        self.reg & BIT7 != 0
+    }
+
+    pub fn set_sprite_overflow(&mut self, state: bool) {
+        self.set_bit(BIT5, state)
+    }
+
+    pub fn set_sprite_zero_hit(&mut self, state: bool) {
+        self.set_bit(BIT6, state)
+    }
+
+    pub fn set_vblank_started(&mut self, state: bool) {
+        self.set_bit(BIT7, state)
+    }
+
+    fn set_bit(&mut self, bit: u8, state: bool) {
+        if state {
+            self.reg |= bit;
+        } else {
+            self.reg &= !bit;
+        }
     }
 }
 
@@ -189,12 +253,16 @@ impl ScrollReg {
         }
         self.is_x = !self.is_x;
     }
+
+    pub fn reset_order(&mut self) {
+        self.is_x = true;
+    }
 }
 
 impl Ppu {
     pub fn read_data_reg(&self) -> Result<u8, NesError> {
         let mut reg_addr_copy = self.reg_addr.get();
-        let addr = reg_addr_copy.get();
+        let mut addr = reg_addr_copy.reg();
         reg_addr_copy.add(self.reg_ctrl.vram_addr_inc);
         self.reg_addr.set(reg_addr_copy);
 
@@ -211,6 +279,12 @@ impl Ppu {
                 Ok(ret)
             }
             PPU_PALETTE_START..=PPU_PALETTE_END => {
+                match addr {
+                    0x3f10 | 0x3f14 | 0x3f18 | 0x3f1c => {
+                        addr -= 0x10;
+                    }
+                    _ => (),
+                }
                 let offset = (addr - PPU_PALETTE_START) as usize;
                 Ok(self.palette[offset])
             }
@@ -220,7 +294,7 @@ impl Ppu {
 
     pub fn write_data_reg(&mut self, val: u8) -> Result<(), NesError> {
         let mut reg_addr_copy = self.reg_addr.get();
-        let addr = reg_addr_copy.get();
+        let mut addr = reg_addr_copy.reg();
 
         match addr {
             PPU_CHR_START..=PPU_CHR_END => {
@@ -231,6 +305,12 @@ impl Ppu {
                 self.vram[mirrored_addr as usize] = val;
             }
             PPU_PALETTE_START..=PPU_PALETTE_END => {
+                match addr {
+                    0x3f10 | 0x3f14 | 0x3f18 | 0x3f1c => {
+                        addr -= 0x10;
+                    }
+                    _ => (),
+                }
                 let offset = (addr - PPU_PALETTE_START) as usize;
                 self.palette[offset] = val;
             }
@@ -257,8 +337,37 @@ impl Ppu {
         }
     }
 
-    fn write_oam_addr_reg(&mut self, addr: u8) {
-        self.reg_oam_addr = addr;
+    fn write_addr_reg(&mut self, val: u8) {
+        self.reg_addr.get_mut().push(val)
+    }
+
+    fn write_control_reg(&mut self, val: u8) {
+        self.reg_ctrl.push(val)
+    }
+
+    fn write_mask_reg(&mut self, val: u8) {
+        self.reg_mask.push(val)
+    }
+
+    fn read_status_reg(&self) -> u8 {
+        {
+            let mut tmp = self.reg_scroll.get();
+            tmp.reset_order();
+            self.reg_scroll.set(tmp);
+        }
+        {
+            let mut tmp = self.reg_addr.get();
+            tmp.reset_order();
+            self.reg_addr.set(tmp);
+        }
+        let mut tmp = self.reg_status.get();
+        tmp.set_vblank_started(false);
+        self.reg_status.set(tmp);
+        tmp.reg()
+    }
+
+    fn write_oam_addr_reg(&mut self, val: u8) {
+        self.reg_oam_addr = val;
     }
 
     fn write_oam_data_reg(&mut self, val: u8) {
@@ -266,7 +375,7 @@ impl Ppu {
         self.reg_oam_addr = self.reg_oam_addr.wrapping_add(1);
     }
 
-    fn read_oam_data_reg(&mut self) -> u8 {
+    fn read_oam_data_reg(&self) -> u8 {
         self.oam_data[self.reg_oam_addr as usize]
     }
 
@@ -276,17 +385,20 @@ impl Ppu {
             .copied()
             .for_each(|v| self.write_oam_data_reg(v))
     }
+
+    fn write_scroll_reg(&mut self, val: u8) {
+        self.reg_scroll.get_mut().push(val);
+    }
 }
 
 impl RwMemory for Ppu {
     fn read_one(&self, addr: u16) -> Result<u8, NesError> {
         match addr {
-            (0x2000..=0x2006) | 0x4014 => Err(NesError::PpuReadForbidden),
+            0x2000 | 0x2001 | 0x2003 | 0x2005 | 0x2006 | 0x4014 => Err(NesError::PpuReadForbidden),
+            0x2002 => Ok(self.read_status_reg()),
+            0x2004 => Ok(self.read_oam_data_reg()),
             0x2007 => self.read_data_reg(),
-            0x2008..=PPU_MMAP_RNG_END => {
-                let mirrored_addr = addr & PPU_MIRROR_MASK;
-                self.read_one(mirrored_addr)
-            }
+            0x2008..=PPU_MMAP_RNG_END => self.read_one(addr & PPU_MIRROR_MASK),
             _ => {
                 println!("WARN: reading memory outside mapped ppu range {addr}");
                 Ok(0)
@@ -296,19 +408,15 @@ impl RwMemory for Ppu {
 
     fn write_one(&mut self, addr: u16, val: u8) -> Result<(), NesError> {
         match addr {
-            0x2000 => self.reg_ctrl.push(val),
-            0x2006 => {
-                let mut ra = self.reg_addr.get();
-                ra.push(val);
-                self.reg_addr.set(ra);
-            }
-            0x2007 => {
-                self.write_data_reg(val)?;
-            }
-            0x2008..=PPU_MMAP_RNG_END => {
-                let mirrored_addr = addr & PPU_MIRROR_MASK;
-                self.write_one(mirrored_addr, val)?;
-            }
+            0x2000 => self.write_control_reg(val),
+            0x2001 => self.write_mask_reg(val),
+            0x2002 => return Err(NesError::PpuWriteForbidden),
+            0x2003 => self.write_oam_addr_reg(val),
+            0x2004 => self.write_oam_data_reg(val),
+            0x2005 => self.write_scroll_reg(val),
+            0x2006 => self.write_addr_reg(val),
+            0x2007 => self.write_data_reg(val)?,
+            0x2008..=PPU_MMAP_RNG_END => self.write_one(addr & PPU_MIRROR_MASK, val)?,
             _ => {
                 println!("WARN: reading memory outside mapped ppu range {addr}");
             }
