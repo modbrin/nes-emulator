@@ -136,11 +136,11 @@ impl RwMemory for Device {
     }
 }
 
-#[derive(Debug)]
 pub struct Bus {
     pub ram: [u8; RAM_SIZE],
     pub prg: Vec<u8>,
     pub ppu: Ppu,
+    cycles: usize,
 }
 
 impl Bus {
@@ -149,7 +149,18 @@ impl Bus {
             ram: [0; RAM_SIZE],
             prg: rom.prg_data,
             ppu: Ppu::new(rom.chr_data, rom.scr_mirroring),
+            cycles: 0,
         }
+    }
+
+    pub fn tick(&mut self, cycles: u8) -> bool {
+        self.cycles += cycles as usize;
+
+        let nmi_before = self.ppu.is_pending_nmi;
+        self.ppu.tick(cycles * 3);
+        let nmi_after = self.ppu.is_pending_nmi;
+
+        return !nmi_before && nmi_after;
     }
 }
 
@@ -160,13 +171,26 @@ impl RwMemory for Bus {
                 let mapped_addr = addr & CPU_MIRROR_MASK;
                 Ok(self.ram[mapped_addr as usize])
             }
-            PPU_MMAP_RNG_START..=PPU_MMAP_RNG_END => self.ppu.read_one(addr),
+            (PPU_MMAP_RNG_START..=0x2007) | 0x4014 => self.ppu.read_one(addr),
+            0x2008..=PPU_MMAP_RNG_END => self.read_one(addr & PPU_MIRROR_MASK),
             ROM_SECTION_START..=ROM_SECTION_END => {
                 let mut prg_offset = (addr - ROM_SECTION_START) as usize;
                 if self.prg.len() == SIZE_16KB && prg_offset >= SIZE_16KB {
                     prg_offset %= SIZE_16KB;
                 }
                 Ok(self.prg[prg_offset])
+            }
+            0x4000..=0x4013 | 0x4015 => {
+                // APU
+                Ok(0xFF)
+            }
+            0x4016 => {
+                // joypad 1
+                Ok(0x00)
+            }
+            0x4017 => {
+                // joypad 2
+                Ok(0x00)
             }
             _ => {
                 println!("WARN: Reading memory outside mapped bus range: {addr}");
@@ -181,11 +205,31 @@ impl RwMemory for Bus {
                 let mapped_addr = addr & CPU_MIRROR_MASK;
                 self.ram[mapped_addr as usize] = val;
             }
-            PPU_MMAP_RNG_START..=PPU_MMAP_RNG_END => {
+            PPU_MMAP_RNG_START..=0x2007 => {
                 self.ppu.write_one(addr, val)?;
+            }
+            0x4014 => {
+                let mut buffer: [u8; 256] = [0; 256];
+                let hi: u16 = (val as u16) << 8;
+                for i in 0..256u16 {
+                    buffer[i as usize] = self.read_one(hi + i)?;
+                }
+                self.ppu.write_oam_dma(&buffer);
+            }
+            0x2008..=PPU_MMAP_RNG_END => {
+                self.write_one(addr & PPU_MIRROR_MASK, val)?;
             }
             ROM_SECTION_START..=ROM_SECTION_END => {
                 return Err(NesError::RomWriteAttempt);
+            }
+            (0x4000..=0x4013) | 0x4015 => {
+                // APU
+            }
+            0x4016 => {
+                // joypad 1
+            }
+            0x4017 => {
+                // joypad 2
             }
             _ => {
                 println!("WARN: Writing memory outside mapped bus range: {addr}");

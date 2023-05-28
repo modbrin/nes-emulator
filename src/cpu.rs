@@ -6,11 +6,11 @@ use std::ops::{Not, Shl, Shr};
 type InstPtr = fn(&mut Device, AddressingMode) -> Result<InstructionMetadata, NesError>;
 
 #[rustfmt::skip]
-pub static INST_TABLE: &[(u8, Opcode, InstPtr, AddressingMode, u8)] = {
+pub static INST_TABLE: [(u8, Opcode, InstPtr, AddressingMode, u8); 256] = {
     use Opcode::*;
     use AddressingMode::*;
     type D = Device;
-    &[
+    [
          /*0x00*/                                 /*0x01*/                                       /*0x02*/                                   /*0x03*/
 /*0x00*/ (0x00, BRK, D::inst_brk, Implied,   7),  (0x01, ORA, D::inst_ora, IndexedIndirect, 6),  (0x02, JAM, D::inst_jam, Implied,     0),  (0x03, SLO, D::inst_slo, IndexedIndirect, 8),
 /*0x04*/ (0x04, NOP2,D::inst_dop, Zeropage,  3),  (0x05, ORA, D::inst_ora, Zeropage,        3),  (0x06, ASL, D::inst_asl, Zeropage,    5),  (0x07, SLO, D::inst_slo, Zeropage,        5),
@@ -98,16 +98,14 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
+        Default::default()
     }
 }
 
 impl Device {
     /// decode and execute the instruction
     pub(crate) fn decode_and_execute(&mut self, opcode: u8) -> InstResult {
-        let (repr, op, func, mode, cycles) = INST_TABLE[opcode as usize];
+        let (repr, _op, func, mode, cycles) = INST_TABLE[opcode as usize];
         let res = func(self, mode);
         match res {
             Ok(mut meta) => {
@@ -191,6 +189,25 @@ impl Device {
         self.set_flag(Flag::Negative, target.wrapping_sub(param) & BIT7 != 0);
         self.result_pc(param_addr.pc_upd)
     }
+
+    pub fn check_and_enter_nmi(&mut self) -> Result<(), NesError> {
+        if self.bus.ppu.is_pending_nmi {
+            self.bus.ppu.is_pending_nmi = false;
+            // push program counter to stack
+            self.stack_push_le_u16(self.cpu.pc)?;
+            // prepare and push status to stack
+            let saved_status = self.cpu.reg_p;
+            self.set_flag(Flag::B, false);
+            self.set_flag(Flag::B2, true);
+            self.stack_push(self.cpu.reg_p)?;
+            self.cpu.reg_p = saved_status;
+            self.set_flag(Flag::IntDis, true);
+            // transition to nmi handler
+            self.bus.tick(2);
+            self.cpu.pc = self.read_le_u16(NMI_HANDLER_ADDR)?;
+        }
+        Ok(())
+    }
 }
 
 /// Flag Operations
@@ -213,11 +230,6 @@ impl Device {
         self.set_flag(Flag::Zero, target == 0);
         self.set_flag(Flag::Negative, target & BIT7 != 0);
     }
-}
-
-/// instruction placeholder
-fn undef(device: &mut Device, _mode: AddressingMode) -> InstResult {
-    Err(NesError::Unimplemented)
 }
 
 impl Device {
@@ -699,21 +711,6 @@ impl Device {
 
     /// ARR
     fn inst_arr(&mut self, mode: AddressingMode) -> InstResult {
-        // let addr = self.fetch_param_addr(mode)?;
-        // let val = self.read_one(addr)?;
-        // self.cpu.reg_a &= val;
-        // self.cpu.reg_a = self.cpu.reg_a.rotate_right(1); // TODO: likely wrong
-        // let bit5 = self.cpu.reg_a & BIT5 != 0;
-        // let bit6 = self.cpu.reg_a & BIT6 != 0;
-        // let (flag_c, flag_v) = match (bit5, bit6) {
-        //     (true, true) => (true, false),
-        //     (false, false) => (false, false),
-        //     (true, false) => (false, true),
-        //     (false, true) => (true, true),
-        // };
-        // self.set_flag(Flag::Overflow, flag_v);
-        // self.set_flag(Flag::Carry, flag_c);
-        // self.update_zero_negative_flags(self.cpu.reg_a);
         let _ = self.inst_and(mode)?;
         self.inst_ror(AddressingMode::Accumulator)
     }

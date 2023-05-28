@@ -4,6 +4,30 @@ use crate::prelude::*;
 
 use std::cell::Cell;
 
+const PPU_SCANLINES_NUM: u16 = 262;
+const PPU_CYCLES_PER_SCANLINE: usize = 341;
+const PPU_TRIGGER_VBANK_AT: u16 = 241;
+
+#[rustfmt::skip]
+pub static PALLETE: [(u8, u8, u8); 64] = [
+    (0x80, 0x80, 0x80), (0x00, 0x3D, 0xA6), (0x00, 0x12, 0xB0), (0x44, 0x00, 0x96),
+    (0xA1, 0x00, 0x5E), (0xC7, 0x00, 0x28), (0xBA, 0x06, 0x00), (0x8C, 0x17, 0x00),
+    (0x5C, 0x2F, 0x00), (0x10, 0x45, 0x00), (0x05, 0x4A, 0x00), (0x00, 0x47, 0x2E),
+    (0x00, 0x41, 0x66), (0x00, 0x00, 0x00), (0x05, 0x05, 0x05), (0x05, 0x05, 0x05),
+    (0xC7, 0xC7, 0xC7), (0x00, 0x77, 0xFF), (0x21, 0x55, 0xFF), (0x82, 0x37, 0xFA),
+    (0xEB, 0x2F, 0xB5), (0xFF, 0x29, 0x50), (0xFF, 0x22, 0x00), (0xD6, 0x32, 0x00),
+    (0xC4, 0x62, 0x00), (0x35, 0x80, 0x00), (0x05, 0x8F, 0x00), (0x00, 0x8A, 0x55),
+    (0x00, 0x99, 0xCC), (0x21, 0x21, 0x21), (0x09, 0x09, 0x09), (0x09, 0x09, 0x09),
+    (0xFF, 0xFF, 0xFF), (0x0F, 0xD7, 0xFF), (0x69, 0xA2, 0xFF), (0xD4, 0x80, 0xFF),
+    (0xFF, 0x45, 0xF3), (0xFF, 0x61, 0x8B), (0xFF, 0x88, 0x33), (0xFF, 0x9C, 0x12),
+    (0xFA, 0xBC, 0x20), (0x9F, 0xE3, 0x0E), (0x2B, 0xF0, 0x35), (0x0C, 0xF0, 0xA4),
+    (0x05, 0xFB, 0xFF), (0x5E, 0x5E, 0x5E), (0x0D, 0x0D, 0x0D), (0x0D, 0x0D, 0x0D),
+    (0xFF, 0xFF, 0xFF), (0xA6, 0xFC, 0xFF), (0xB3, 0xEC, 0xFF), (0xDA, 0xAB, 0xEB),
+    (0xFF, 0xA8, 0xF9), (0xFF, 0xAB, 0xB3), (0xFF, 0xD2, 0xB0), (0xFF, 0xEF, 0xA6),
+    (0xFF, 0xF7, 0x9C), (0xD7, 0xE8, 0x95), (0xA6, 0xED, 0xAF), (0xA2, 0xF2, 0xDA),
+    (0x99, 0xFF, 0xFC), (0xDD, 0xDD, 0xDD), (0x11, 0x11, 0x11), (0x11, 0x11, 0x11),
+];
+
 /// Picture Processing Unit
 #[derive(Debug)]
 pub struct Ppu {
@@ -21,6 +45,9 @@ pub struct Ppu {
     pub reg_oam_addr: u8,
 
     pub internal_buf: Cell<u8>,
+    pub scanline: u16,
+    pub cycles: usize,
+    pub is_pending_nmi: bool,
 }
 
 impl Ppu {
@@ -38,7 +65,33 @@ impl Ppu {
             reg_scroll: Cell::new(ScrollReg::new()),
             reg_oam_addr: 0,
             internal_buf: Default::default(),
+            scanline: 0,
+            cycles: 0,
+            is_pending_nmi: false,
         }
+    }
+
+    pub fn tick(&mut self, cycles: u8) -> bool {
+        self.cycles += cycles as usize;
+        if self.cycles >= PPU_CYCLES_PER_SCANLINE {
+            self.cycles -= PPU_CYCLES_PER_SCANLINE;
+            self.scanline += 1;
+            if self.scanline == PPU_TRIGGER_VBANK_AT {
+                self.reg_status.get_mut().set_vblank_started(true);
+                self.reg_status.get_mut().set_sprite_zero_hit(false);
+                if self.reg_ctrl.gen_nmi_at_vbi {
+                    self.is_pending_nmi = true;
+                }
+            }
+            if self.scanline >= PPU_SCANLINES_NUM {
+                self.scanline = 0;
+                self.is_pending_nmi = false;
+                self.reg_status.get_mut().set_sprite_zero_hit(false);
+                self.reg_status.get_mut().set_vblank_started(false);
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -322,12 +375,12 @@ impl Ppu {
     }
 
     fn mirror_vram_addr(&self, addr: u16) -> u16 {
-        let offset = addr - PPU_RAM_START;
+        let offset = (addr & 0b10111111111111) - PPU_RAM_START;
         match self.scr_mirroring {
             ScrMirror::Vertical => offset % 0x800,
             ScrMirror::Horizontal => {
                 if offset >= 0x800 {
-                    offset % 0x400 + 0x800
+                    offset % 0x400 + 0x400
                 } else {
                     offset % 0x400
                 }
@@ -342,7 +395,12 @@ impl Ppu {
     }
 
     fn write_control_reg(&mut self, val: u8) {
-        self.reg_ctrl.push(val)
+        let old_nmi_flag = self.reg_ctrl.gen_nmi_at_vbi;
+        self.reg_ctrl.push(val);
+        let is_nmi_set = !old_nmi_flag && self.reg_ctrl.gen_nmi_at_vbi;
+        if is_nmi_set && self.reg_status.get().get_vblank_started() {
+            self.is_pending_nmi = true;
+        }
     }
 
     fn write_mask_reg(&mut self, val: u8) {
@@ -361,9 +419,10 @@ impl Ppu {
             self.reg_addr.set(tmp);
         }
         let mut tmp = self.reg_status.get();
+        let out = tmp.reg();
         tmp.set_vblank_started(false);
         self.reg_status.set(tmp);
-        tmp.reg()
+        out
     }
 
     fn write_oam_addr_reg(&mut self, val: u8) {
@@ -379,7 +438,7 @@ impl Ppu {
         self.oam_data[self.reg_oam_addr as usize]
     }
 
-    fn write_oam_dma(&mut self, data: impl AsRef<[u8]>) {
+    pub fn write_oam_dma(&mut self, data: impl AsRef<[u8]>) {
         data.as_ref()
             .iter()
             .copied()
@@ -394,13 +453,19 @@ impl Ppu {
 impl RwMemory for Ppu {
     fn read_one(&self, addr: u16) -> Result<u8, NesError> {
         match addr {
-            0x2000 | 0x2001 | 0x2003 | 0x2005 | 0x2006 | 0x4014 => Err(NesError::PpuReadForbidden),
+            0x2000 | 0x2001 | 0x2003 | 0x2005 | 0x2006 | 0x4014 => {
+                // Err(NesError::PpuReadForbidden)
+                Ok(0)
+            }
             0x2002 => Ok(self.read_status_reg()),
             0x2004 => Ok(self.read_oam_data_reg()),
             0x2007 => self.read_data_reg(),
             0x2008..=PPU_MMAP_RNG_END => self.read_one(addr & PPU_MIRROR_MASK),
             _ => {
-                println!("WARN: reading memory outside mapped ppu range {addr}");
+                println!(
+                    "WARN: reading memory outside mapped ppu range {:04x?}",
+                    addr
+                );
                 Ok(0)
             }
         }
@@ -418,9 +483,42 @@ impl RwMemory for Ppu {
             0x2007 => self.write_data_reg(val)?,
             0x2008..=PPU_MMAP_RNG_END => self.write_one(addr & PPU_MIRROR_MASK, val)?,
             _ => {
-                println!("WARN: reading memory outside mapped ppu range {addr}");
+                println!("WARN: writing memory outside mapped ppu range {addr}");
             }
         }
         Ok(())
+    }
+}
+
+impl Ppu {
+    pub fn extract_screen_state(&self, vram: &[u8; VRAM_SIZE], target: &mut Frame) {
+        let bank = self.reg_ctrl.bkg_pattern_table_addr;
+
+        for i in 0..0x03C0 {
+            let tile = vram[i] as u16;
+            let tile_x = i % 32;
+            let tile_y = i / 32;
+            let chr_idx = (bank + tile * 16) as usize;
+            let tile = &self.chr_data[chr_idx..chr_idx + 16];
+
+            for y in 0..=7 {
+                let mut upper = tile[y];
+                let mut lower = tile[y + 8];
+
+                for x in (0..=7).rev() {
+                    let value = (1 & upper) << 1 | (1 & lower);
+                    upper = upper >> 1;
+                    lower = lower >> 1;
+                    let rgb = match value {
+                        0 => PALLETE[0x01],
+                        1 => PALLETE[0x23],
+                        2 => PALLETE[0x27],
+                        3 => PALLETE[0x30],
+                        _ => unreachable!(),
+                    };
+                    target.set_pixel(tile_x * 8 + x, tile_y * 8 + y, PixelColor::from_tuple(rgb))
+                }
+            }
+        }
     }
 }

@@ -13,10 +13,10 @@ pub struct Device {
 
 /// Control flow
 impl Device {
-    pub fn with_rom(rom: Rom) -> Self {
+    pub fn with_bus(bus: Bus) -> Self {
         Device {
             cpu: Cpu::new(),
-            bus: Bus::with_rom(rom),
+            bus,
         }
     }
 
@@ -26,7 +26,7 @@ impl Device {
     //     Ok(())
     // }
 
-    pub fn run<F>(&mut self, mut callback: F) -> Result<(), NesError>
+    pub fn run<F>(&mut self, mut render_callback: F) -> Result<(), NesError>
     where
         F: FnMut(&mut Device),
     {
@@ -36,11 +36,20 @@ impl Device {
         loop {
             let clock = Instant::now();
 
-            callback(self);
+            self.check_and_enter_nmi()?;
+
+            // trace(&self);
+
             // process instruction
             let opcode = self.fetch_next()?;
             let meta = self.decode_and_execute(opcode)?;
+
             self.cpu.pc = meta.update_pc;
+
+            let render_requested = self.bus.tick(meta.cycles);
+            if render_requested {
+                render_callback(self);
+            }
 
             // match cpu timing
             let elapsed = clock.elapsed();

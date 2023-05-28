@@ -33,13 +33,14 @@ pub const CPU_MMAP_RNG_END: u16 = 0x1FFF;
 pub const PPU_MMAP_RNG_START: u16 = 0x2000;
 pub const PPU_MMAP_RNG_END: u16 = 0x3FFF;
 pub const CPU_MIRROR_MASK: u16 = 0x07FF;
-pub const PPU_MIRROR_MASK: u16 = 0x0207;
+pub const PPU_MIRROR_MASK: u16 = 0x2007;
 
 pub const NES_TAG: &[u8] = &[0x4E, 0x45, 0x53, 0x1A];
 pub const PRG_BANK_SIZE: usize = 16 * 1024; // 16 kB
 pub const CHR_BANK_SIZE: usize = 8 * 1024; // 8 kB
 pub const ROM_TRAINER_SIZE: usize = 512; // 512 bytes
 pub const PALETTE_COLORS: usize = 32;
+pub const NMI_HANDLER_ADDR: u16 = 0xFFFA;
 
 pub const PPU_CHR_START: u16 = 0x0000;
 pub const PPU_CHR_END: u16 = 0x1FFF;
@@ -47,6 +48,11 @@ pub const PPU_RAM_START: u16 = 0x2000;
 pub const PPU_RAM_END: u16 = 0x2FFF;
 pub const PPU_PALETTE_START: u16 = 0x3f00;
 pub const PPU_PALETTE_END: u16 = 0x3fff;
+
+pub const DISPLAY_RES_PAL: (usize, usize) = (256, 240);
+pub const DISPLAY_RES_NTSC: (usize, usize) = (256, 224);
+pub const DISPLAY_SIZE_PAL: usize = DISPLAY_RES_PAL.0 * DISPLAY_RES_PAL.1 * 3;
+pub const DISPLAY_SIZE_NTSC: usize = DISPLAY_RES_NTSC.0 * DISPLAY_RES_NTSC.1 * 3;
 
 #[rustfmt::skip]
 #[derive(Clone, Copy)]
@@ -81,8 +87,8 @@ pub enum Opcode {
     JSR, LDA, LDX, LDY, LSR, NOP, ORA, PHA, PHP, PLA, PLP, ROL, ROR, RTI, 
     RTS, SBC, SEC, SED, SEI, STA, STX, STY, TAX, TAY, TSX, TXA, TXS, TYA,
     // unofficial opcodes
-    ANC, SAX, ARR,  ASR, LXA, SHA, SBX, DCP,  NOP2, ISB, JAM, LAE, LAX, NOP3,
-    RLA, RRA, SBC2, SLO, SRE, SHX, SHY, NOP4, ANE,  SHS,
+    ANC,  SAX, ARR, ASR,  LXA, SHA, SBX, DCP, NOP2, ISB, JAM, LAE, LAX, 
+    NOP3, RLA, RRA, SBC2, SLO, SRE, SHX, SHY, NOP4, ANE, SHS,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
