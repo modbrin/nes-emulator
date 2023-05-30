@@ -6,6 +6,8 @@ use crate::prelude::*;
 use std::thread;
 use std::time::{Duration, Instant};
 
+const IO_POLL_INTERVAL_CYCLES: usize = 50;
+
 pub struct Device {
     pub cpu: Cpu,
     pub bus: Bus,
@@ -20,21 +22,27 @@ impl Device {
         }
     }
 
-    // pub fn start(&mut self) -> Result<(), NesError> {
-    //     self.reset()?;
-    //     self.run()?;
-    //     Ok(())
-    // }
-
-    pub fn run<F>(&mut self, mut render_callback: F) -> Result<(), NesError>
+    pub fn run<F1, F2>(
+        &mut self,
+        mut render_callback: F1,
+        mut io_callback: F2,
+    ) -> Result<(), NesError>
     where
-        F: FnMut(&mut Device),
+        F1: FnMut(&mut Device),
+        F2: FnMut(&mut Device),
     {
         let time_per_cycle = Duration::from_secs(1) / CPU_FREQ as u32;
+        println!("Predicted TPC {time_per_cycle:?}");
         let mut cycles_since_reset: usize = 0;
+        let mut io_poll_counter: usize = 0;
         let mut cycles_clock = Instant::now();
+        
         loop {
             let clock = Instant::now();
+
+            if io_poll_counter == 0 {
+                io_callback(self);
+            }
 
             self.check_and_enter_nmi()?;
 
@@ -53,15 +61,16 @@ impl Device {
 
             // match cpu timing
             let elapsed = clock.elapsed();
-            let expected = time_per_cycle * meta.cycles as u32;
-            if let Some(sleep_time) = expected.checked_sub(elapsed) {
-                thread::sleep(sleep_time);
-            } else {
-                // println!(
-                //     "Instruction took longer than expected: {}ns/{}ns, op: {:#04x}, pc: {}",
-                //     elapsed.as_nanos(), expected.as_nanos(), opcode, self.cpu.pc
-                // );
-            }
+            // let expected = time_per_cycle * meta.cycles as u32;
+            // if let Some(sleep_time) = expected.checked_sub(elapsed) {
+            //     // thread::sleep(sleep_time);
+            // } else {
+            //     // println!(
+            //     //     "Instruction took longer than expected: {}ns/{}ns, op: {:#04x}, pc: {}",
+            //     //     elapsed.as_nanos(), expected.as_nanos(), opcode, self.cpu.pc
+            //     // );
+            // }
+
             // handle BRK
             if meta.is_break {
                 println!("Encountered BRK, stopping");
@@ -69,8 +78,12 @@ impl Device {
             }
 
             cycles_since_reset += meta.cycles as usize;
+            io_poll_counter += meta.cycles as usize;
+            if io_poll_counter > IO_POLL_INTERVAL_CYCLES {
+                io_poll_counter = 0;
+            }
             if cycles_clock.elapsed() > Duration::from_secs(1) {
-                println!("Cycles per second: {cycles_since_reset}");
+                println!("Cycles per second: {cycles_since_reset}, frame time: {elapsed:?}");
                 cycles_since_reset = 0;
                 cycles_clock = Instant::now();
             }

@@ -1,5 +1,7 @@
 //! This module contains logic of graphics handing, PPU
 
+use itertools::Itertools;
+
 use crate::prelude::*;
 
 use std::cell::Cell;
@@ -8,31 +10,11 @@ const PPU_SCANLINES_NUM: u16 = 262;
 const PPU_CYCLES_PER_SCANLINE: usize = 341;
 const PPU_TRIGGER_VBANK_AT: u16 = 241;
 
-#[rustfmt::skip]
-pub static PALLETE: [(u8, u8, u8); 64] = [
-    (0x80, 0x80, 0x80), (0x00, 0x3D, 0xA6), (0x00, 0x12, 0xB0), (0x44, 0x00, 0x96),
-    (0xA1, 0x00, 0x5E), (0xC7, 0x00, 0x28), (0xBA, 0x06, 0x00), (0x8C, 0x17, 0x00),
-    (0x5C, 0x2F, 0x00), (0x10, 0x45, 0x00), (0x05, 0x4A, 0x00), (0x00, 0x47, 0x2E),
-    (0x00, 0x41, 0x66), (0x00, 0x00, 0x00), (0x05, 0x05, 0x05), (0x05, 0x05, 0x05),
-    (0xC7, 0xC7, 0xC7), (0x00, 0x77, 0xFF), (0x21, 0x55, 0xFF), (0x82, 0x37, 0xFA),
-    (0xEB, 0x2F, 0xB5), (0xFF, 0x29, 0x50), (0xFF, 0x22, 0x00), (0xD6, 0x32, 0x00),
-    (0xC4, 0x62, 0x00), (0x35, 0x80, 0x00), (0x05, 0x8F, 0x00), (0x00, 0x8A, 0x55),
-    (0x00, 0x99, 0xCC), (0x21, 0x21, 0x21), (0x09, 0x09, 0x09), (0x09, 0x09, 0x09),
-    (0xFF, 0xFF, 0xFF), (0x0F, 0xD7, 0xFF), (0x69, 0xA2, 0xFF), (0xD4, 0x80, 0xFF),
-    (0xFF, 0x45, 0xF3), (0xFF, 0x61, 0x8B), (0xFF, 0x88, 0x33), (0xFF, 0x9C, 0x12),
-    (0xFA, 0xBC, 0x20), (0x9F, 0xE3, 0x0E), (0x2B, 0xF0, 0x35), (0x0C, 0xF0, 0xA4),
-    (0x05, 0xFB, 0xFF), (0x5E, 0x5E, 0x5E), (0x0D, 0x0D, 0x0D), (0x0D, 0x0D, 0x0D),
-    (0xFF, 0xFF, 0xFF), (0xA6, 0xFC, 0xFF), (0xB3, 0xEC, 0xFF), (0xDA, 0xAB, 0xEB),
-    (0xFF, 0xA8, 0xF9), (0xFF, 0xAB, 0xB3), (0xFF, 0xD2, 0xB0), (0xFF, 0xEF, 0xA6),
-    (0xFF, 0xF7, 0x9C), (0xD7, 0xE8, 0x95), (0xA6, 0xED, 0xAF), (0xA2, 0xF2, 0xDA),
-    (0x99, 0xFF, 0xFC), (0xDD, 0xDD, 0xDD), (0x11, 0x11, 0x11), (0x11, 0x11, 0x11),
-];
-
 /// Picture Processing Unit
 #[derive(Debug)]
 pub struct Ppu {
     pub chr_data: Vec<u8>,
-    pub palette: [u8; PALETTE_COLORS],
+    pub palette: [u8; PALETTE_COLORS_NUM],
     pub vram: [u8; VRAM_SIZE],
     pub oam_data: [u8; 256],
     pub scr_mirroring: ScrMirror,
@@ -54,7 +36,7 @@ impl Ppu {
     pub fn new(chr_data: Vec<u8>, scr_mirroring: ScrMirror) -> Self {
         Self {
             chr_data,
-            palette: [0; PALETTE_COLORS],
+            palette: [0; PALETTE_COLORS_NUM],
             vram: [0; VRAM_SIZE],
             oam_data: [0; 256],
             scr_mirroring,
@@ -156,9 +138,7 @@ pub struct ControlReg {
 
 impl ControlReg {
     pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
+        Default::default()
     }
 
     pub fn push(&mut self, val: u8) {
@@ -195,9 +175,7 @@ pub struct MaskReg {
 
 impl MaskReg {
     pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
+        Default::default()
     }
 
     pub fn push(&mut self, val: u8) {
@@ -236,9 +214,7 @@ pub struct StatusReg {
 
 impl StatusReg {
     pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
+        Default::default()
     }
 
     pub fn push(&mut self, val: u8) {
@@ -375,7 +351,7 @@ impl Ppu {
     }
 
     fn mirror_vram_addr(&self, addr: u16) -> u16 {
-        let offset = (addr & 0b10111111111111) - PPU_RAM_START;
+        let offset = (addr & PPU_RAM_END) - PPU_RAM_START;
         match self.scr_mirroring {
             ScrMirror::Vertical => offset % 0x800,
             ScrMirror::Horizontal => {
@@ -454,8 +430,8 @@ impl RwMemory for Ppu {
     fn read_one(&self, addr: u16) -> Result<u8, NesError> {
         match addr {
             0x2000 | 0x2001 | 0x2003 | 0x2005 | 0x2006 | 0x4014 => {
-                // Err(NesError::PpuReadForbidden)
-                Ok(0)
+                Err(NesError::PpuReadForbidden)
+                // Ok(0)
             }
             0x2002 => Ok(self.read_status_reg()),
             0x2004 => Ok(self.read_oam_data_reg()),
@@ -491,34 +467,105 @@ impl RwMemory for Ppu {
 }
 
 impl Ppu {
-    pub fn extract_screen_state(&self, vram: &[u8; VRAM_SIZE], target: &mut Frame) {
+    pub fn extract_screen_state(&self, target: &mut Frame) {
+        self.draw_background(target);
+        self.draw_sprites(target);
+    }
+
+    fn draw_background(&self, target: &mut Frame) {
         let bank = self.reg_ctrl.bkg_pattern_table_addr;
 
         for i in 0..0x03C0 {
-            let tile = vram[i] as u16;
-            let tile_x = i % 32;
-            let tile_y = i / 32;
-            let chr_idx = (bank + tile * 16) as usize;
+            let tile_idx = self.vram[i] as u16;
+            let (tile_x, tile_y) = (i % 32, i / 32);
+            let chr_idx = (bank + tile_idx * 16) as usize;
             let tile = &self.chr_data[chr_idx..chr_idx + 16];
 
-            for y in 0..=7 {
-                let mut upper = tile[y];
-                let mut lower = tile[y + 8];
+            let background_pallete = self.get_background_palette(tile_x, tile_y);
 
-                for x in (0..=7).rev() {
-                    let value = (1 & upper) << 1 | (1 & lower);
-                    upper = upper >> 1;
-                    lower = lower >> 1;
+            for y in 0..8 {
+                // two pixel bits are in different bytes
+                let (lo, hi) = (tile[y], tile[y + 8]);
+                for x in 0..8 {
+                    let value = (((hi >> x) & BIT0) << 1) | ((lo >> x) & BIT0);
                     let rgb = match value {
-                        0 => PALLETE[0x01],
-                        1 => PALLETE[0x23],
-                        2 => PALLETE[0x27],
-                        3 => PALLETE[0x30],
+                        0 => PALETTE[self.palette[0] as usize],
+                        1 | 2 | 3 => PALETTE[background_pallete[value as usize] as usize],
                         _ => unreachable!(),
                     };
-                    target.set_pixel(tile_x * 8 + x, tile_y * 8 + y, PixelColor::from_tuple(rgb))
+                    target.set_pixel(
+                        tile_x * 8 + 7 - x,
+                        tile_y * 8 + y,
+                        PixelColor::from_tuple(rgb),
+                    )
                 }
             }
         }
+    }
+
+    fn draw_sprites(&self, target: &mut Frame) {
+        assert_eq!(self.oam_data.len() % 4, 0);
+        let offset_flipped = |val: usize, offset: usize, flip: bool| {
+            if flip {
+                val + 7 - offset
+            } else {
+                val + offset
+            }
+        };
+        let bank: u16 = self.reg_ctrl.spr_pattern_table_addr;
+
+        for (tile_y, tile_idx, attrs, tile_x) in
+            self.oam_data.iter().copied().tuples::<(_, _, _, _)>()
+        {
+            let flip_x = attrs & BIT6 != 0;
+            let flip_y = attrs & BIT7 != 0;
+            let palette_idx = attrs & 0b11;
+            // let priority = attrs & BIT5 == 0;
+
+            let chr_idx = (bank + tile_idx as u16 * 16) as usize;
+            let tile = &self.chr_data[chr_idx..chr_idx + 16];
+
+            let sprite_palette = self.get_sprite_palette(palette_idx as usize);
+
+            for y in 0..8 {
+                let (lo, hi) = (tile[y], tile[y + 8]);
+                for x in 0..8 {
+                    let value = (((hi >> x) & BIT0) << 1) | ((lo >> x) & BIT0);
+                    if value != 0 {
+                        let rgb = PALETTE[sprite_palette[value as usize] as usize];
+                        let pixel_x = offset_flipped(tile_x as usize, x, !flip_x);
+                        let pixel_y = offset_flipped(tile_y as usize, y, flip_y);
+                        target.set_pixel(pixel_x, pixel_y, PixelColor::from_tuple(rgb));
+                    }
+                }
+            }
+        }
+    }
+
+    fn get_sprite_palette(&self, pallete_idx: usize) -> [u8; 4] {
+        let start = 0x11 + pallete_idx * 4;
+        [
+            0,
+            self.palette[start],
+            self.palette[start + 1],
+            self.palette[start + 2],
+        ]
+    }
+
+    pub fn get_background_palette(&self, tile_x: usize, tile_y: usize) -> [u8; 4] {
+        let attr_table_idx = (tile_y / 4) * 8 + tile_x / 4;
+        let attr_byte = self.vram[0x03C0 + attr_table_idx];
+
+        let hi = (tile_y % 4) / 2;
+        let lo = (tile_x % 4) / 2;
+        let attr_idx = (hi << 1) | lo;
+        let palette_idx = (attr_byte >> (attr_idx * 2)) & 0b11;
+
+        let start: usize = 1 + (palette_idx as usize) * 4;
+        let c0 = self.palette[0];
+        let c1 = self.palette[start];
+        let c2 = self.palette[start + 1];
+        let c3 = self.palette[start + 2];
+        [c0, c1, c2, c3]
     }
 }

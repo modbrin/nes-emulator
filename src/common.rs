@@ -128,12 +128,16 @@ impl Frame {
 
     pub fn set_pixel(&mut self, x: usize, y: usize, color: PixelColor) {
         let idx = (y * DISPLAY_RES_PAL.0 + x) * 3;
-        self.data
-            .get_mut(idx..idx + 3)
-            .map(|pixel| pixel.copy_from_slice(&color.as_array()));
+        if idx + 2 < self.data.len() {
+            self.data
+                .get_mut(idx..idx + 3)
+                .map(|pixel| pixel.copy_from_slice(&color.as_array()));
+        }
     }
 }
 
+/// Reading from this address modifies the PPU state, therefore
+/// it should not be read from a tracing utility.
 fn is_forbidden_address(addr: u16) -> bool {
     match addr {
         PPU_MMAP_RNG_START..=PPU_MMAP_RNG_END => true,

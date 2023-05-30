@@ -23,7 +23,7 @@ impl Screen {
         let scale: f32 = 3.0;
         let window = video_subsystem
             .window(
-                "NES Emulator",
+                "NES Emulator by modbrin",
                 (256.0 * scale) as u32,
                 (240.0 * scale) as u32,
             )
@@ -36,10 +36,8 @@ impl Screen {
             .present_vsync()
             .build()
             .map_err(|e| format!("{e:?}"))?;
-        let mut event_pump = sdl_context.event_pump().map_err(|e| format!("{e:?}"))?;
+        let event_pump = sdl_context.event_pump().map_err(|e| format!("{e:?}"))?;
         canvas.set_scale(scale, scale)?;
-        // let texture_creator = canvas.texture_creator();
-        // let mut texture = texture_creator.create_texture_target(PixelFormatEnum::RGB24, 256, 240).map_err(|e|format!("{e:?}"))?;
         let screen = Self {
             sdl_context,
             video_subsystem,
@@ -56,8 +54,9 @@ impl Screen {
     pub fn create_texture(
         texture_creator: &TextureCreator<WindowContext>,
     ) -> Result<Texture<'_>, String> {
-        texture_creator
+        let texture = texture_creator
             .create_texture_target(PixelFormatEnum::RGB24, 256, 240)
-            .map_err(|e| format!("{e:?}"))
+            .map_err(|e| format!("{e:?}"))?;
+        Ok(texture)
     }
 }
