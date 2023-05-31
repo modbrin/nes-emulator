@@ -356,7 +356,7 @@ impl Ppu {
             ScrMirror::Vertical => offset % 0x800,
             ScrMirror::Horizontal => {
                 if offset >= 0x800 {
-                    offset % 0x400 + 0x400
+                    (offset % 0x400) + 0x400
                 } else {
                     offset % 0x400
                 }

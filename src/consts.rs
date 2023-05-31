@@ -1,5 +1,9 @@
 //! This module contains constants, including system details and common numeric/hardware values
 
+use once_cell::sync::Lazy;
+use sdl2::keyboard::Keycode;
+use std::collections::HashMap;
+
 /// available ram of cpu, 2kb
 pub const RAM_SIZE: usize = 2 * 1024;
 /// available ram of ppu, 2kb
@@ -151,3 +155,34 @@ pub static PALETTE: [(u8,u8,u8); 64] = [
     (0xFF, 0xF7, 0x9C), (0xD7, 0xE8, 0x95), (0xA6, 0xED, 0xAF), (0xA2, 0xF2, 0xDA), 
     (0x99, 0xFF, 0xFC), (0xDD, 0xDD, 0xDD), (0x11, 0x11, 0x11), (0x11, 0x11, 0x11),
 ];
+
+#[derive(Clone, Copy)]
+#[rustfmt::skip]
+#[repr(u8)]
+pub enum ControllerButton {
+    A      = BIT0,
+    B      = BIT1,
+    Select = BIT2,
+    Start  = BIT3,
+    Up     = BIT4,
+    Down   = BIT5,
+    Left   = BIT6,
+    Right  = BIT7,
+}
+
+pub static SDL_BUTTON_MAPPING: Lazy<HashMap<Keycode, ControllerButton>> = Lazy::new(|| {
+    let mut mapping = HashMap::new();
+    mapping.insert(Keycode::J, ControllerButton::A);
+    mapping.insert(Keycode::K, ControllerButton::B);
+    mapping.insert(Keycode::B, ControllerButton::Select);
+    mapping.insert(Keycode::V, ControllerButton::Start);
+    mapping.insert(Keycode::W, ControllerButton::Up);
+    mapping.insert(Keycode::S, ControllerButton::Down);
+    mapping.insert(Keycode::A, ControllerButton::Left);
+    mapping.insert(Keycode::D, ControllerButton::Right);
+    mapping.insert(Keycode::Up, ControllerButton::Up);
+    mapping.insert(Keycode::Down, ControllerButton::Down);
+    mapping.insert(Keycode::Left, ControllerButton::Left);
+    mapping.insert(Keycode::Right, ControllerButton::Right);
+    mapping
+});

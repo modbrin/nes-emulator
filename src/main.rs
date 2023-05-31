@@ -30,45 +30,6 @@ pub(crate) mod prelude {
 }
 use prelude::*;
 
-// fn handle_user_input(device: &mut Device, event_pump: &mut EventPump) {
-//     for event in event_pump.poll_iter() {
-//         match event {
-//             Event::Quit { .. }
-//             | Event::KeyDown {
-//                 keycode: Some(Keycode::Escape),
-//                 ..
-//             } => {
-//                 std::process::exit(0);
-//             }
-//             Event::KeyDown {
-//                 keycode: Some(Keycode::W),
-//                 ..
-//             } => {
-//                 device.write_one(0xFF, 0x77).unwrap();
-//             }
-//             Event::KeyDown {
-//                 keycode: Some(Keycode::S),
-//                 ..
-//             } => {
-//                 device.write_one(0xFF, 0x73).unwrap();
-//             }
-//             Event::KeyDown {
-//                 keycode: Some(Keycode::A),
-//                 ..
-//             } => {
-//                 device.write_one(0xFF, 0x61).unwrap();
-//             }
-//             Event::KeyDown {
-//                 keycode: Some(Keycode::D),
-//                 ..
-//             } => {
-//                 device.write_one(0xFF, 0x64).unwrap();
-//             }
-//             _ => { /* do nothing */ }
-//         }
-//     }
-// }
-
 /// panics on failure
 fn read_rom_from_file(path: impl AsRef<Path>) -> Rom {
     let file = File::open(path).unwrap();
@@ -83,7 +44,7 @@ fn main() {
     let texture_creator = screen.texture_creator();
     let mut texture = Screen::create_texture(&texture_creator).unwrap();
 
-    let rom = read_rom_from_file("roms/pacman.nes");
+    let rom = read_rom_from_file("roms/zelda.nes");
     let bus = Bus::with_rom(rom);
     let mut device = Device::with_bus(bus);
     device.reset().unwrap();
@@ -110,6 +71,16 @@ fn main() {
                             keycode: Some(Keycode::Escape),
                             ..
                         } => std::process::exit(0),
+                        Event::KeyDown { keycode, .. } => {
+                            if let Some(btn) = map_controller_button(&keycode) {
+                                device.bus.controller.set_button(btn, true);
+                            }
+                        }
+                        Event::KeyUp { keycode, .. } => {
+                            if let Some(btn) = map_controller_button(&keycode) {
+                                device.bus.controller.set_button(btn, false);
+                            }
+                        }
                         _ => {}
                     }
                 }

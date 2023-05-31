@@ -1,8 +1,8 @@
 //! This module contains supplementary utilites used by main logic
 
-use std::ops::Not;
-
 use crate::prelude::*;
+use sdl2::keyboard::Keycode;
+use std::{cell::Cell, ops::Not};
 
 #[derive(Clone, Copy, Debug)]
 pub enum NesError {
@@ -127,13 +127,61 @@ impl Frame {
     }
 
     pub fn set_pixel(&mut self, x: usize, y: usize, color: PixelColor) {
+        if x >= DISPLAY_RES_PAL.0 || y >= DISPLAY_RES_PAL.1 {
+            return;
+        }
         let idx = (y * DISPLAY_RES_PAL.0 + x) * 3;
-        if idx + 2 < self.data.len() {
-            self.data
-                .get_mut(idx..idx + 3)
-                .map(|pixel| pixel.copy_from_slice(&color.as_array()));
+        self.data
+            .get_mut(idx..idx + 3)
+            .map(|pixel| pixel.copy_from_slice(&color.as_array()));
+    }
+}
+
+#[derive(Default)]
+pub struct Controller {
+    strobe_on: bool,
+    reporting_index: Cell<u8>,
+    buttons: u8,
+}
+
+impl Controller {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    pub fn push(&mut self, val: u8) {
+        self.strobe_on = val & BIT0 != 0;
+        if self.strobe_on {
+            self.reporting_index.set(0);
         }
     }
+
+    pub fn take(&self) -> u8 {
+        let reporting_index = self.reporting_index.get();
+        if reporting_index > 7 {
+            return ControllerButton::A as u8;
+        }
+        let status = (self.buttons >> reporting_index) & BIT0;
+        if !self.strobe_on {
+            self.reporting_index.set(reporting_index + 1);
+        }
+        status
+    }
+
+    pub fn set_button(&mut self, button: ControllerButton, pressed: bool) {
+        if pressed {
+            self.buttons |= button as u8;
+        } else {
+            self.buttons &= !(button as u8);
+        }
+    }
+}
+
+pub fn map_controller_button(keycode: &Option<Keycode>) -> Option<ControllerButton> {
+    keycode
+        .as_ref()
+        .map(|kc| SDL_BUTTON_MAPPING.get(kc).copied())
+        .flatten()
 }
 
 /// Reading from this address modifies the PPU state, therefore

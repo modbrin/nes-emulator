@@ -140,6 +140,7 @@ pub struct Bus {
     pub ram: [u8; RAM_SIZE],
     pub prg: Vec<u8>,
     pub ppu: Ppu,
+    pub controller: Controller,
     cycles: usize,
 }
 
@@ -149,6 +150,7 @@ impl Bus {
             ram: [0; RAM_SIZE],
             prg: rom.prg_data,
             ppu: Ppu::new(rom.chr_data, rom.scr_mirroring),
+            controller: Controller::new(),
             cycles: 0,
         }
     }
@@ -186,7 +188,7 @@ impl RwMemory for Bus {
             }
             0x4016 => {
                 // joypad 1
-                Ok(0x00)
+                Ok(self.controller.take())
             }
             0x4017 => {
                 // joypad 2
@@ -227,6 +229,7 @@ impl RwMemory for Bus {
             }
             0x4016 => {
                 // joypad 1
+                self.controller.push(val);
             }
             0x4017 => {
                 // joypad 2

@@ -6,7 +6,7 @@ use crate::prelude::*;
 use std::thread;
 use std::time::{Duration, Instant};
 
-const IO_POLL_INTERVAL_CYCLES: usize = 50;
+const IO_POLL_INTERVAL_CYCLES: usize = 10;
 
 pub struct Device {
     pub cpu: Cpu,
@@ -36,7 +36,7 @@ impl Device {
         let mut cycles_since_reset: usize = 0;
         let mut io_poll_counter: usize = 0;
         let mut cycles_clock = Instant::now();
-        
+
         loop {
             let clock = Instant::now();
 
