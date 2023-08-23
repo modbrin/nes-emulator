@@ -182,7 +182,7 @@ impl RwMemory for Bus {
                 }
                 Ok(self.prg[prg_offset])
             }
-            0x4000..=0x4013 | 0x4015 => {
+            (0x4000..=0x4013) | 0x4015 => {
                 // APU
                 Ok(0xFF)
             }
@@ -211,18 +211,15 @@ impl RwMemory for Bus {
                 self.ppu.write_one(addr, val)?;
             }
             0x4014 => {
-                let mut buffer: [u8; 256] = [0; 256];
+                let mut buffer = [0u8; 256];
                 let hi: u16 = (val as u16) << 8;
-                for i in 0..256u16 {
-                    buffer[i as usize] = self.read_one(hi + i)?;
+                for i in 0..buffer.len() {
+                    buffer[i] = self.read_one(hi + i as u16)?;
                 }
                 self.ppu.write_oam_dma(&buffer);
             }
             0x2008..=PPU_MMAP_RNG_END => {
                 self.write_one(addr & PPU_MIRROR_MASK, val)?;
-            }
-            ROM_SECTION_START..=ROM_SECTION_END => {
-                return Err(NesError::RomWriteAttempt);
             }
             (0x4000..=0x4013) | 0x4015 => {
                 // APU
@@ -233,6 +230,9 @@ impl RwMemory for Bus {
             }
             0x4017 => {
                 // joypad 2
+            }
+            ROM_SECTION_START..=ROM_SECTION_END => {
+                // return Err(NesError::RomWriteAttempt);
             }
             _ => {
                 println!("WARN: Writing memory outside mapped bus range: {addr}");

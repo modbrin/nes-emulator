@@ -44,7 +44,7 @@ fn main() {
     let texture_creator = screen.texture_creator();
     let mut texture = Screen::create_texture(&texture_creator).unwrap();
 
-    let rom = read_rom_from_file("roms/zelda.nes");
+    let rom = read_rom_from_file("roms/pacman.nes");
     let bus = Bus::with_rom(rom);
     let mut device = Device::with_bus(bus);
     device.reset().unwrap();
@@ -72,12 +72,12 @@ fn main() {
                             ..
                         } => std::process::exit(0),
                         Event::KeyDown { keycode, .. } => {
-                            if let Some(btn) = map_controller_button(&keycode) {
+                            if let Some(btn) = map_controller_button(keycode.as_ref()) {
                                 device.bus.controller.set_button(btn, true);
                             }
                         }
                         Event::KeyUp { keycode, .. } => {
-                            if let Some(btn) = map_controller_button(&keycode) {
+                            if let Some(btn) = map_controller_button(keycode.as_ref()) {
                                 device.bus.controller.set_button(btn, false);
                             }
                         }

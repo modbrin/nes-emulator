@@ -177,11 +177,10 @@ impl Controller {
     }
 }
 
-pub fn map_controller_button(keycode: &Option<Keycode>) -> Option<ControllerButton> {
+pub fn map_controller_button(keycode: Option<&Keycode>) -> Option<ControllerButton> {
     keycode
         .as_ref()
-        .map(|kc| SDL_BUTTON_MAPPING.get(kc).copied())
-        .flatten()
+        .and_then(|kc| SDL_BUTTON_MAPPING.get(kc).copied())
 }
 
 /// Reading from this address modifies the PPU state, therefore

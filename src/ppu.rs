@@ -8,7 +8,7 @@ use std::cell::Cell;
 
 const PPU_SCANLINES_NUM: u16 = 262;
 const PPU_CYCLES_PER_SCANLINE: usize = 341;
-const PPU_TRIGGER_VBANK_AT: u16 = 241;
+const PPU_TRIGGER_VBLANK_AT: u16 = 241;
 
 /// Picture Processing Unit
 #[derive(Debug)]
@@ -58,7 +58,7 @@ impl Ppu {
         if self.cycles >= PPU_CYCLES_PER_SCANLINE {
             self.cycles -= PPU_CYCLES_PER_SCANLINE;
             self.scanline += 1;
-            if self.scanline == PPU_TRIGGER_VBANK_AT {
+            if self.scanline == PPU_TRIGGER_VBLANK_AT {
                 self.reg_status.get_mut().set_vblank_started(true);
                 self.reg_status.get_mut().set_sprite_zero_hit(false);
                 if self.reg_ctrl.gen_nmi_at_vbi {
@@ -68,12 +68,21 @@ impl Ppu {
             if self.scanline >= PPU_SCANLINES_NUM {
                 self.scanline = 0;
                 self.is_pending_nmi = false;
-                self.reg_status.get_mut().set_sprite_zero_hit(false);
                 self.reg_status.get_mut().set_vblank_started(false);
+                self.reg_status.get_mut().set_sprite_zero_hit(false);
                 return true;
             }
         }
         return false;
+    }
+
+    pub fn check_sprite_zero_hit(&self, cycle: usize) -> bool {
+        // TODO: improve detection using opaque pixels
+        let zero_sprite_y = self.oam_data[0] as usize;
+        let zero_sprite_x = self.oam_data[3] as usize;
+        let overlap_y = zero_sprite_y as u16 == self.scanline;
+        let overlap_x = zero_sprite_x == self.cycles;
+        overlap_y && overlap_x && self.reg_mask.show_spr
     }
 }
 
@@ -430,8 +439,8 @@ impl RwMemory for Ppu {
     fn read_one(&self, addr: u16) -> Result<u8, NesError> {
         match addr {
             0x2000 | 0x2001 | 0x2003 | 0x2005 | 0x2006 | 0x4014 => {
-                Err(NesError::PpuReadForbidden)
-                // Ok(0)
+                // Err(NesError::PpuReadForbidden)
+                Ok(0)
             }
             0x2002 => Ok(self.read_status_reg()),
             0x2004 => Ok(self.read_oam_data_reg()),

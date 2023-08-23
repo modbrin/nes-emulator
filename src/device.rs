@@ -3,7 +3,6 @@
 use crate::cpu::Cpu;
 use crate::memory::Bus;
 use crate::prelude::*;
-use std::thread;
 use std::time::{Duration, Instant};
 
 const IO_POLL_INTERVAL_CYCLES: usize = 10;
@@ -72,10 +71,10 @@ impl Device {
             // }
 
             // handle BRK
-            if meta.is_break {
-                println!("Encountered BRK, stopping");
-                return Ok(());
-            }
+            // if meta.is_break {
+            //     println!("Encountered BRK, stopping");
+            //     return Ok(());
+            // }
 
             cycles_since_reset += meta.cycles as usize;
             io_poll_counter += meta.cycles as usize;
