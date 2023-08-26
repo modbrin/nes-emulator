@@ -56,6 +56,9 @@ impl Ppu {
     pub fn tick(&mut self, cycles: u8) -> bool {
         self.cycles += cycles as usize;
         if self.cycles >= PPU_CYCLES_PER_SCANLINE {
+            if self.check_sprite_zero_hit(self.cycles) {
+                self.reg_status.get_mut().set_sprite_zero_hit(true);
+            }
             self.cycles -= PPU_CYCLES_PER_SCANLINE;
             self.scanline += 1;
             if self.scanline == PPU_TRIGGER_VBLANK_AT {
@@ -81,7 +84,7 @@ impl Ppu {
         let zero_sprite_y = self.oam_data[0] as usize;
         let zero_sprite_x = self.oam_data[3] as usize;
         let overlap_y = zero_sprite_y as u16 == self.scanline;
-        let overlap_x = zero_sprite_x == self.cycles;
+        let overlap_x = zero_sprite_x <= cycle;
         overlap_y && overlap_x && self.reg_mask.show_spr
     }
 }
@@ -318,7 +321,7 @@ impl Ppu {
             }
             PPU_PALETTE_START..=PPU_PALETTE_END => {
                 match addr {
-                    0x3f10 | 0x3f14 | 0x3f18 | 0x3f1c => {
+                    0x3F10 | 0x3F14 | 0x3F18 | 0x3F1C => {
                         addr -= 0x10;
                     }
                     _ => (),
@@ -344,7 +347,7 @@ impl Ppu {
             }
             PPU_PALETTE_START..=PPU_PALETTE_END => {
                 match addr {
-                    0x3f10 | 0x3f14 | 0x3f18 | 0x3f1c => {
+                    0x3F10 | 0x3F14 | 0x3F18 | 0x3F1C => {
                         addr -= 0x10;
                     }
                     _ => (),
@@ -477,20 +480,73 @@ impl RwMemory for Ppu {
 
 impl Ppu {
     pub fn extract_screen_state(&self, target: &mut Frame) {
-        self.draw_background(target);
-        self.draw_sprites(target);
+        let reg_scroll = self.reg_scroll.get();
+        let (scroll_x, scroll_y) = (reg_scroll.x_scroll as usize, reg_scroll.y_scroll as usize);
+
+        let (main_nametable, scnd_nametable) = match self.scr_mirroring {
+            ScrMirror::Vertical => match self.reg_ctrl.base_nametable_addr {
+                0x2000 | 0x2800 => (&self.vram[0x000..0x400], &self.vram[0x400..0x800]),
+                0x2400 | 0x2C00 => (&self.vram[0x400..0x800], &self.vram[0x000..0x400]),
+                _ => unreachable!("unexpected base nametable address"),
+            },
+            ScrMirror::Horizontal => match self.reg_ctrl.base_nametable_addr {
+                0x2000 | 0x2400 => (&self.vram[0x000..0x400], &self.vram[0x400..0x800]),
+                0x2800 | 0x2C00 => (&self.vram[0x400..0x800], &self.vram[0x000..0x400]),
+                _ => unreachable!("unexpected base nametable address"),
+            },
+            _ => unimplemented!(
+                "other mirroring modes are currently unsupported: {:?}",
+                self.scr_mirroring
+            ),
+        };
+        // better than no priority, but still incorrect
+        // TODO: implement priority properly
+        self.draw_sprites(target, false);
+        self.draw_background(
+            target,
+            main_nametable,
+            -(scroll_x as isize),
+            -(scroll_y as isize),
+            Rect::new(scroll_x, scroll_y, 256, 240),
+        );
+        if scroll_x > 0 {
+            self.draw_background(
+                target,
+                scnd_nametable,
+                (256 - scroll_x) as isize,
+                0,
+                Rect::new(0, 0, scroll_x, 240),
+            );
+        } else if scroll_y > 0 {
+            self.draw_background(
+                target,
+                scnd_nametable,
+                0,
+                (240 - scroll_y) as isize,
+                Rect::new(0, 0, 256, scroll_y),
+            );
+        }
+        self.draw_sprites(target, true);
     }
 
-    fn draw_background(&self, target: &mut Frame) {
+    fn draw_background(
+        &self,
+        target: &mut Frame,
+        name_table: &[u8],
+        shift_x: isize,
+        shift_y: isize,
+        fragment: Rect,
+    ) {
         let bank = self.reg_ctrl.bkg_pattern_table_addr;
+        let attribute_table = &name_table[0x3C0..=0x3FF];
 
         for i in 0..0x03C0 {
-            let tile_idx = self.vram[i] as u16;
+            let tile_idx = name_table[i] as u16;
             let (tile_x, tile_y) = (i % 32, i / 32);
             let chr_idx = (bank + tile_idx * 16) as usize;
             let tile = &self.chr_data[chr_idx..chr_idx + 16];
 
-            let background_pallete = self.get_background_palette(tile_x, tile_y);
+            let background_palette = self.get_background_palette(attribute_table, tile_x, tile_y);
 
             for y in 0..8 {
                 // two pixel bits are in different bytes
@@ -499,20 +555,28 @@ impl Ppu {
                     let value = (((hi >> x) & BIT0) << 1) | ((lo >> x) & BIT0);
                     let rgb = match value {
                         0 => PALETTE[self.palette[0] as usize],
-                        1 | 2 | 3 => PALETTE[background_pallete[value as usize] as usize],
+                        1 | 2 | 3 => PALETTE[background_palette[value as usize] as usize],
                         _ => unreachable!(),
                     };
-                    target.set_pixel(
-                        tile_x * 8 + 7 - x,
-                        tile_y * 8 + y,
-                        PixelColor::from_tuple(rgb),
-                    )
+                    let pixel_x = tile_x * 8 + 7 - x;
+                    let pixel_y = tile_y * 8 + y;
+                    if pixel_x >= fragment.x1
+                        && pixel_x < fragment.x2
+                        && pixel_y >= fragment.y1
+                        && pixel_y < fragment.y2
+                    {
+                        target.set_pixel(
+                            (pixel_x as isize + shift_x) as usize,
+                            (pixel_y as isize + shift_y) as usize,
+                            PixelColor::from_tuple(rgb),
+                        )
+                    }
                 }
             }
         }
     }
 
-    fn draw_sprites(&self, target: &mut Frame) {
+    fn draw_sprites(&self, target: &mut Frame, front_priority: bool) {
         assert_eq!(self.oam_data.len() % 4, 0);
         let offset_flipped = |val: usize, offset: usize, flip: bool| {
             if flip {
@@ -526,10 +590,13 @@ impl Ppu {
         for (tile_y, tile_idx, attrs, tile_x) in
             self.oam_data.iter().copied().tuples::<(_, _, _, _)>()
         {
+            let priority = attrs & BIT5 == 0;
+            if priority != front_priority {
+                continue;
+            }
             let flip_x = attrs & BIT6 != 0;
             let flip_y = attrs & BIT7 != 0;
             let palette_idx = attrs & 0b11;
-            // let priority = attrs & BIT5 == 0;
 
             let chr_idx = (bank + tile_idx as u16 * 16) as usize;
             let tile = &self.chr_data[chr_idx..chr_idx + 16];
@@ -561,9 +628,14 @@ impl Ppu {
         ]
     }
 
-    pub fn get_background_palette(&self, tile_x: usize, tile_y: usize) -> [u8; 4] {
+    pub fn get_background_palette(
+        &self,
+        attribute_table: &[u8],
+        tile_x: usize,
+        tile_y: usize,
+    ) -> [u8; 4] {
         let attr_table_idx = (tile_y / 4) * 8 + tile_x / 4;
-        let attr_byte = self.vram[0x03C0 + attr_table_idx];
+        let attr_byte = attribute_table[attr_table_idx];
 
         let hi = (tile_y % 4) / 2;
         let lo = (tile_x % 4) / 2;

@@ -1,6 +1,7 @@
 //! This module contains logic for application startup
 
 use std::{
+    env,
     fs::File,
     io::{BufReader, Read},
     path::Path,
@@ -40,11 +41,17 @@ fn read_rom_from_file(path: impl AsRef<Path>) -> Rom {
 }
 
 fn main() {
+    let args: Vec<_> = env::args().collect();
+    let Some(rom_path) = args.get(1) else {
+        println!("usage: nes-emulator path/to/rom.nes");
+        return;
+    };
+
     let mut screen = Screen::init().unwrap();
     let texture_creator = screen.texture_creator();
     let mut texture = Screen::create_texture(&texture_creator).unwrap();
 
-    let rom = read_rom_from_file("roms/pacman.nes");
+    let rom = read_rom_from_file(rom_path);
     let bus = Bus::with_rom(rom);
     let mut device = Device::with_bus(bus);
     device.reset().unwrap();

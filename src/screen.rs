@@ -23,7 +23,7 @@ impl Screen {
         let scale: f32 = 3.0;
         let window = video_subsystem
             .window(
-                "NES Emulator by modbrin",
+                "NES Emulator",
                 (256.0 * scale) as u32,
                 (240.0 * scale) as u32,
             )
