@@ -1,16 +1,16 @@
 use sdl2::{
-    event::Event,
-    keyboard::Keycode,
-    pixels::{Color, PixelFormatEnum},
+    EventPump,
+    pixels::PixelFormatEnum,
     render::{Canvas, Texture, TextureCreator},
-    video::{Window, WindowContext},
-    EventPump, Sdl, VideoSubsystem,
+    Sdl, video::{Window, WindowContext}, VideoSubsystem,
 };
 
 use crate::prelude::*;
 
 pub struct Screen {
+    #[allow(unused)]
     sdl_context: Sdl,
+    #[allow(unused)]
     video_subsystem: VideoSubsystem,
     pub canvas: Canvas<Window>,
     pub event_pump: EventPump,

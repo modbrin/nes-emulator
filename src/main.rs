@@ -10,6 +10,7 @@ use std::{
 use sdl2::{event::Event, keyboard::Keycode};
 
 use device::Device;
+use prelude::*;
 
 mod common;
 mod consts;
@@ -21,15 +22,13 @@ mod rom;
 mod screen;
 
 pub(crate) mod prelude {
-    pub use crate::device::Device;
-
     pub use crate::common::*;
     pub use crate::consts::*;
+    pub use crate::device::Device;
     pub use crate::memory::*;
     pub use crate::rom::*;
     pub use crate::screen::*;
 }
-use prelude::*;
 
 /// panics on failure
 fn read_rom_from_file(path: impl AsRef<Path>) -> Rom {

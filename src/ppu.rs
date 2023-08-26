@@ -1,10 +1,10 @@
 //! This module contains logic of graphics handing, PPU
 
+use std::cell::Cell;
+
 use itertools::Itertools;
 
 use crate::prelude::*;
-
-use std::cell::Cell;
 
 const PPU_SCANLINES_NUM: u16 = 262;
 const PPU_CYCLES_PER_SCANLINE: usize = 341;

@@ -1,8 +1,9 @@
 //! This module contains constants, including system details and common numeric/hardware values
 
+use std::collections::HashMap;
+
 use once_cell::sync::Lazy;
 use sdl2::keyboard::Keycode;
-use std::collections::HashMap;
 
 /// available ram of cpu, 2kb
 pub const RAM_SIZE: usize = 2 * 1024;

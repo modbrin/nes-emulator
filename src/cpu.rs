@@ -1,7 +1,8 @@
 //! This module contains layout and logic of CPU and instruction handlers
 
-use crate::prelude::*;
 use std::ops::{Not, Shl, Shr};
+
+use crate::prelude::*;
 
 type InstPtr = fn(&mut Device, AddressingMode) -> Result<InstructionMetadata, NesError>;
 

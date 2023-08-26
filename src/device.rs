@@ -1,9 +1,10 @@
 //! This module contains core logic for device components layout
 
+use std::time::{Duration, Instant};
+
 use crate::cpu::Cpu;
 use crate::memory::Bus;
 use crate::prelude::*;
-use std::time::{Duration, Instant};
 
 const IO_POLL_INTERVAL_CYCLES: usize = 10;
 

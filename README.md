@@ -1,10 +1,10 @@
 ## Minimal NES Emulator
 
 ## Status
-+ First-gen games such as Pacman and Super Mario Bros are playable.
-+ Audio doesn't work - APU is not implemented.
-+ CPU supports official and unofficial opcodes.
-+ PPU is minimal, non-basic games don't work.
++ First-gen games such as Pacman and Super Mario Bros are playable
++ Audio doesn't work - APU is not implemented
++ CPU supports official and unofficial opcodes
++ PPU is minimal, non-basic games don't work
 
 Bugs:
 - Sprite 0 hit doesn't seem to properly work
@@ -15,11 +15,22 @@ Bugs:
 cargo run --release -- path/to/rom.nes
 ```
 
+## Keys Mapping
+```
+WASD or Arrows => Up,Left,Down,Right
+B              => Select
+V              => Start
+J              => A
+K              => B
+```
+
 ## Screenshots
 <p align="center">
   <img src="img/pacman.png" alt="" width="300">
   <img src="img/mario.png" alt="" width="300">
 </p>
+
+> NES is a trademark of Nintendo of America Inc.
 
 ## Based on
 * https://www.nesdev.org

@@ -1,8 +1,10 @@
 //! This module contains supplementary utilites used by main logic
 
-use crate::prelude::*;
-use sdl2::keyboard::Keycode;
 use std::{cell::Cell, ops::Not};
+
+use sdl2::keyboard::Keycode;
+
+use crate::prelude::*;
 
 #[derive(Clone, Copy, Debug)]
 pub enum NesError {
@@ -345,7 +347,7 @@ fn get_operands_repr(device: &Device, mode: AddressingMode, op: Opcode) -> Strin
 
 pub fn trace(device: &Device) {
     let inst = device.bus.read_one(device.cpu.pc).unwrap();
-    let (_, op, func, addr_mode, cycles) = crate::cpu::INST_TABLE[inst as usize];
+    let (_, op, _func, addr_mode, _cycles) = crate::cpu::INST_TABLE[inst as usize];
 
     let pc_str = format!("{:04x}", device.cpu.pc).to_uppercase();
 
