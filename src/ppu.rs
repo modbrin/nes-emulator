@@ -499,9 +499,6 @@ impl Ppu {
                 self.scr_mirroring
             ),
         };
-        // better than no priority, but still incorrect
-        // TODO: implement priority properly
-        self.draw_sprites(target, false);
         self.draw_background(
             target,
             main_nametable,
@@ -526,6 +523,9 @@ impl Ppu {
                 Rect::new(0, 0, 256, scroll_y),
             );
         }
+        // better than no priority, but still incorrect
+        // TODO: implement priority properly
+        self.draw_sprites(target, false);
         self.draw_sprites(target, true);
     }
 
